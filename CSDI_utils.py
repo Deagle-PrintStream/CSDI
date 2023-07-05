@@ -14,8 +14,11 @@ def train(
     foldername="",
 ):
     optimizer = Adam(model.parameters(), lr=config["lr"], weight_decay=1e-6)
+    output_path:str=""
     if foldername != "":
         output_path = foldername + "/model.pth"
+    else:
+        output_path="./model.pth"
 
     p1 = int(0.75 * config["epochs"])
     p2 = int(0.9 * config["epochs"])
@@ -46,6 +49,7 @@ def train(
         if valid_loader is not None and (epoch_no + 1) % valid_epoch_interval == 0:
             model.eval()
             avg_loss_valid = 0
+            batch_no:int=0 #number of batch
             with torch.no_grad():
                 with tqdm(valid_loader, mininterval=5.0, maxinterval=50.0) as it:
                     for batch_no, valid_batch in enumerate(it, start=1):
@@ -72,9 +76,10 @@ def train(
 
 
 def quantile_loss(target, forecast, q: float, eval_points) -> float:
+    #conversion from tensor to float TODO
     return 2 * torch.sum(
         torch.abs((forecast - target) * eval_points * ((target <= forecast) * 1.0 - q))
-    )
+    ) #type:ignore
 
 
 def calc_denominator(target, eval_points):
@@ -95,7 +100,8 @@ def calc_quantile_CRPS(target, forecast, eval_points, mean_scaler, scaler):
         q_pred = torch.cat(q_pred, 0)
         q_loss = quantile_loss(target, q_pred, quantiles[i], eval_points)
         CRPS += q_loss / denom
-    return CRPS.item() / len(quantiles)
+    #unknown member of float type item() TODO
+    return CRPS.item() / len(quantiles) #type:ignore
 
 
 def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldername=""):

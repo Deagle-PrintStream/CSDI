@@ -67,6 +67,7 @@ class CSDI_base(nn.Module):
     def get_hist_mask(self, observed_mask, for_pattern_mask=None):
         if for_pattern_mask is None:
             for_pattern_mask = observed_mask
+        rand_mask=[] #expand variable scope
         if self.target_strategy == "mix":
             rand_mask = self.get_randmask(observed_mask)
 
@@ -148,9 +149,9 @@ class CSDI_base(nn.Module):
 
         for i in range(n_samples):
             # generate noisy observation for unconditional model
+            noisy_cond_history:list = []    #expand variable scope
             if self.is_unconditional == True:
                 noisy_obs = observed_data
-                noisy_cond_history = []
                 for t in range(self.num_steps):
                     noise = torch.randn_like(noisy_obs)
                     noisy_obs = (self.alpha_hat[t] ** 0.5) * noisy_obs + self.beta[t] ** 0.5 * noise
@@ -227,6 +228,9 @@ class CSDI_base(nn.Module):
             for i in range(len(cut_length)):  # to avoid double evaluation
                 target_mask[i, ..., 0 : cut_length[i].item()] = 0
         return samples, observed_data, target_mask, observed_mask, observed_tp
+    
+    def process_data(self, batch)->tuple:
+        raise NotImplementedError("virtual method")
 
 
 class CSDI_PM25(CSDI_base):

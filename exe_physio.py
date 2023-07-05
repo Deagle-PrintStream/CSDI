@@ -7,7 +7,7 @@ import os
 
 from main_model import CSDI_Physio
 from dataset_physio import get_dataloader
-from utils import train, evaluate
+from CSDI_utils import train, evaluate
 
 parser = argparse.ArgumentParser(description="CSDI")
 parser.add_argument("--config", type=str, default="base.yaml")

@@ -63,7 +63,7 @@ def parse_id(id_, missing_ratio=0.1):
 def get_idlist():
     patient_id = []
     for filename in os.listdir("./data/physio/set-a"):
-        match = re.search("\d{6}", filename)
+        match = re.search(r"\d{6}", filename) #vscode warning fixed
         if match:
             patient_id.append(match.group())
     patient_id = np.sort(patient_id)
@@ -141,7 +141,7 @@ class Physio_Dataset(Dataset):
         return len(self.use_index_list)
 
 
-def get_dataloader(seed=1, nfold=None, batch_size=16, missing_ratio=0.1):
+def get_dataloader(seed=1, nfold:int=0, batch_size=16, missing_ratio=0.1): #minor type bug fixed
 
     # only to obtain total length of dataset
     dataset = Physio_Dataset(missing_ratio=missing_ratio, seed=seed)
@@ -165,13 +165,13 @@ def get_dataloader(seed=1, nfold=None, batch_size=16, missing_ratio=0.1):
     dataset = Physio_Dataset(
         use_index_list=train_index, missing_ratio=missing_ratio, seed=seed
     )
-    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=1)
+    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True) #minor type bug fixed
     valid_dataset = Physio_Dataset(
         use_index_list=valid_index, missing_ratio=missing_ratio, seed=seed
     )
-    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=0)
+    valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     test_dataset = Physio_Dataset(
         use_index_list=test_index, missing_ratio=missing_ratio, seed=seed
     )
-    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=0)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     return train_loader, valid_loader, test_loader

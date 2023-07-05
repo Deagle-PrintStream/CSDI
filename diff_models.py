@@ -18,20 +18,21 @@ def Conv1d_with_init(in_channels, out_channels, kernel_size):
 
 
 class DiffusionEmbedding(nn.Module):
-    def __init__(self, num_steps, embedding_dim=128, projection_dim=None):
+    def __init__(self, num_steps, embedding_dim:int=128, projection_dim=None):
         super().__init__()
         if projection_dim is None:
             projection_dim = embedding_dim
         self.register_buffer(
             "embedding",
-            self._build_embedding(num_steps, embedding_dim / 2),
+            self._build_embedding(num_steps, embedding_dim // 2), #type conversion bug fixed
             persistent=False,
         )
         self.projection1 = nn.Linear(embedding_dim, projection_dim)
         self.projection2 = nn.Linear(projection_dim, projection_dim)
 
     def forward(self, diffusion_step):
-        x = self.embedding[diffusion_step]
+        # _gititem_ method not found in nn.Modelu TODO
+        x = self.embedding[diffusion_step] #type:ignore 
         x = self.projection1(x)
         x = F.silu(x)
         x = self.projection2(x)

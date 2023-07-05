@@ -8,6 +8,7 @@ import pandas as pd
 import pickle
 
 os.makedirs("data/", exist_ok=True)
+#healthcare dataset, target download folder: ./data/physio/set-a/
 if sys.argv[1] == "physio":
     url = "https://physionet.org/files/challenge-2012/1.0.0/set-a.tar.gz?download"
     wget.download(url, out="data")
@@ -31,7 +32,7 @@ elif sys.argv[1] == "pm25":
         )
         test_month = [3, 6, 9, 12]
         for i in test_month:
-            df = df[df.index.month != i]
+            df = df[df.index.month != i] #type:ignore
         mean = df.describe().loc["mean"].values
         std = df.describe().loc["std"].values
         path = "./data/pm25/pm25_meanstd.pk"
