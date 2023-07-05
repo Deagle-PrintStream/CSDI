@@ -2,4 +2,7 @@
 
 !*.py
 !*.ipynb
+!*.md
+!*.yaml
+
 !.gitignore
