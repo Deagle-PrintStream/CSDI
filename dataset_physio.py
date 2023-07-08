@@ -19,7 +19,7 @@ def extract_hour(x):
 
 
 def parse_data(x):
-    # extract the last value for each attribute
+    """extract the last value for each attribute"""
     x = x.set_index("Parameter").to_dict()["Value"]
 
     values = []
@@ -61,6 +61,7 @@ def parse_id(id_, missing_ratio=0.1):
 
 
 def get_idlist():
+    """get patient id from file names in 6 digital form and sort"""
     patient_id = []
     for filename in os.listdir("./data/physio/set-a"):
         match = re.search(r"\d{6}", filename) #vscode warning fixed
@@ -156,16 +157,17 @@ def get_dataloader(seed=1, nfold:int=0, batch_size=16, missing_ratio=0.1): #mino
     test_index = indlist[start:end]
     remain_index = np.delete(indlist, np.arange(start, end))
 
+    """dataset division: 0.2 for test, 0.7 for train, 0.1 for validation"""
     np.random.seed(seed)
     np.random.shuffle(remain_index)
-    num_train = (int)(len(dataset) * 0.7)
+    num_train = (int)(len(dataset) * 0.7) 
     train_index = remain_index[:num_train]
     valid_index = remain_index[num_train:]
 
-    dataset = Physio_Dataset(
+    train_dataset = Physio_Dataset(
         use_index_list=train_index, missing_ratio=missing_ratio, seed=seed
     )
-    train_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True) #minor type bug fixed
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) #minor type bug fixed
     valid_dataset = Physio_Dataset(
         use_index_list=valid_index, missing_ratio=missing_ratio, seed=seed
     )

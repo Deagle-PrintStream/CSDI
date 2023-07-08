@@ -4,5 +4,6 @@
 !*.ipynb
 !*.md
 !*.yaml
+!*/
 
 !.gitignore
