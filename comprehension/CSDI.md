@@ -1,4 +1,4 @@
-# CSDI model reimplementation and optimization
+# CSDI: model reimplementation and optimization
 
 ## Task
 > CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation
@@ -13,16 +13,23 @@
 
 ## Summary of paper
 
-1. research background
-2. innovation point
+1. main task
+   1. impute missing values using machine learning techniques within time series data.
+2. innovations
+   1. proposed a conditional diffusion model for time series imputation
+   2. and a self-supervised training method to handle the missing values
 3. model architecture
-4. results and baseline
+4. results
+   1. improves the continuous ranked probability score(CRPS) over existing probabilistic methods
+   2. decreases the mean absolute error (MAE) compared with sota
+   3. can be applied to time series interpolations or  forecasting for one step further
 
 ## Structure of project
 
+Functions of each source file:
 1. `download.py`: download dataset from official website, saved in `./data/`
 2. `exe_physio.py`: shell functions for execution
-   1. argument pass in: config file, device, seed, test missing ratio, nflod number in 5 fold test, model to load, count of samples.
+   1. essential arguments: config file, device, seed, test missing ratio, fold number for testing in 5-fold test, pretrained model to load, count of samples.
    2. load config settings: `config["model","diffusion","train"]` and save to `./save/physio_fold.../` in json form
    3. create the iterators for loading dataset by `get_dataloader()`
    4. initialize the model by `CSDI_Physio()`
@@ -40,6 +47,9 @@
 5. `diff_models.py`: kernel diffusion model implementation
 6. `CSDI_utils`:training and evaluation function
    1. 
+
+Project structure overview:
+![structure](./structure.drawio)
 
 ## Simple modifications
 

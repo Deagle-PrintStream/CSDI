@@ -27,7 +27,7 @@ python exe_physio.py --testmissingratio [missing ratio] --nsample [number of sam
 python exe_physio.py --modelfolder pretrained --testmissingratio [missing ratio] --nsample [number of samples]
 ```
 
-### training and imputation for the healthcare dataset
+### training and imputation for the air quality dataset
 ```shell
 python exe_pm25.py --nsample [number of samples]
 ```
@@ -42,7 +42,7 @@ A part of the codes is based on [BRITS](https://github.com/caow13/BRITS) and [Di
 ## Citation
 If you use this code for your research, please cite our paper:
 
-```
+```txt
 @inproceedings{tashiro2021csdi,
   title={CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation},
   author={Tashiro, Yusuke and Song, Jiaming and Song, Yang and Ermon, Stefano},

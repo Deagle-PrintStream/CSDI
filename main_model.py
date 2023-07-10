@@ -230,6 +230,7 @@ class CSDI_base(nn.Module):
         return samples, observed_data, target_mask, observed_mask, observed_tp
     
     def process_data(self, batch)->tuple:
+        """virtual method in base class, need to be implemented."""
         raise NotImplementedError("virtual method")
 
 
@@ -238,6 +239,7 @@ class CSDI_PM25(CSDI_base):
         super(CSDI_PM25, self).__init__(target_dim, config, device)
 
     def process_data(self, batch):
+        """override the base method"""
         observed_data = batch["observed_data"].to(self.device).float()
         observed_mask = batch["observed_mask"].to(self.device).float()
         observed_tp = batch["timepoints"].to(self.device).float()
