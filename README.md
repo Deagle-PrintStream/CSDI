@@ -1,52 +1,10 @@
 # CSDI
-This is the github repository for the NeurIPS 2021 paper "[CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://arxiv.org/abs/2107.03502)".
 
-## Requirement
+Forked from orignal  "[CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation](https://arxiv.org/abs/2107.03502)". Somehow I messed up with `git clone` operation due to network problems, so I had to download orignal source files as zip and upload manually.
 
-Please install the packages in requirements.txt
+## Tasks
 
-## Preparation
-### Download the healthcare dataset 
-```shell
-python download.py physio
-```
-### Download the air quality dataset 
-```shell
-python download.py pm25
-```
-
-## Experiments 
-
-### training and imputation for the healthcare dataset
-```shell
-python exe_physio.py --testmissingratio [missing ratio] --nsample [number of samples]
-```
-
-### imputation for the healthcare dataset with pretrained model
-```shell
-python exe_physio.py --modelfolder pretrained --testmissingratio [missing ratio] --nsample [number of samples]
-```
-
-### training and imputation for the air quality dataset
-```shell
-python exe_pm25.py --nsample [number of samples]
-```
-
-### Visualize results
-'visualize_examples.ipynb' is a notebook for visualizing results.
-
-## Acknowledgements
-
-A part of the codes is based on [BRITS](https://github.com/caow13/BRITS) and [DiffWave](https://github.com/lmnt-com/diffwave)
-
-## Citation
-If you use this code for your research, please cite our paper:
-
-```txt
-@inproceedings{tashiro2021csdi,
-  title={CSDI: Conditional Score-based Diffusion Models for Probabilistic Time Series Imputation},
-  author={Tashiro, Yusuke and Song, Jiaming and Song, Yang and Ermon, Stefano},
-  booktitle={Advances in Neural Information Processing Systems},
-  year={2021}
-}
-```
+1. data visualization of [physio dataset](https://physionet.org/files/challenge-2012/1.0.0/set-a)
+2. minor code optimizations in kernel modules
+3. parameter optimizations for better performance upon physio dataset
+4. algorithm improvement (seems a bit hard?)
