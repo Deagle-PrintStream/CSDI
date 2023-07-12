@@ -5,8 +5,14 @@ from diff_models import diff_CSDI
 
 
 class CSDI_base(nn.Module):
+    """kernel model for diffusion imputation"""
     def __init__(self, target_dim, config, device):
         super().__init__()
+        """set members including: 
+        dataset dimensions : embedded time, embedded feature, total
+        configuration of diffusion model:
+        hyperparameters: beta sequence, alpha sequence
+        """
         self.device = device
         self.target_dim = target_dim
 
