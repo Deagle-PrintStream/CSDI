@@ -44,7 +44,7 @@ $$
    2. decreases the mean absolute error (MAE) compared with sota
    3. can be applied to time series interpolations or forecasting for one step further.
 
-## Structure of project
+## Structure of demo
 
 Functions of each source file:
 1. `download.py`: download dataset from official website, saved in `./data/`
@@ -69,7 +69,7 @@ Functions of each source file:
    1. 
 
 Project structure overview:
-![structure](./structure.drawio)
+![structure](./structure.png)
 
 ## Simple modifications
 
