@@ -5,5 +5,7 @@
 !*.md
 !*.yaml
 !*/
+!*.png
+!*.jpg
 
 !.gitignore

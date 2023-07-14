@@ -46,6 +46,8 @@ $$
 
 ## Structure of demo
 
+Project structure overview:
+![structure](./structure.png)
 Functions of each source file:
 1. `download.py`: download dataset from official website, saved in `./data/`
 2. `exe_physio.py`: shell functions for execution
@@ -66,10 +68,10 @@ Functions of each source file:
    2. base class `CSDI_base` have following methods:
 5. `diff_models.py`: kernel diffusion model implementation
 6. `CSDI_utils`:training and evaluation function
-   1. 
 
-Project structure overview:
-![structure](./structure.png)
+*TODO*
+
+
 
 ## Simple modifications
 
@@ -77,11 +79,16 @@ Project structure overview:
    1. variable type declearations
    2. no more implicit type conversion
    3. complete different modes in accordance with input argument
-2. an alterative dataset loading method for better visualization.
+2. an alterative dataset loading method for better data visualization.
+3. add annotation for essential functions in diffusion models
 
 ## Details in essential modules
 
+*TODO*
+
 ## result reimplementation
+
+See: [results reimplementation](../visualize_examples.ipynb)
 
 ## Data visualization
 
