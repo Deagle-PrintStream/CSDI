@@ -5,13 +5,15 @@ import math
 
 
 def get_torch_trans(heads=8, layers=1, channels=64):
+    """internal transformer layer whereby `self-attnension mechanism` and `feedforward network`"""
     encoder_layer = nn.TransformerEncoderLayer(
         d_model=channels, nhead=heads, dim_feedforward=64, activation="gelu"
     )
     return nn.TransformerEncoder(encoder_layer, num_layers=layers)
 
 
-def Conv1d_with_init(in_channels, out_channels, kernel_size):
+def Conv1d_with_init(in_channels, out_channels, kernel_size=1):
+    """1D convolution layer, filling tensor whereby `He initialization`"""
     layer = nn.Conv1d(in_channels, out_channels, kernel_size)
     nn.init.kaiming_normal_(layer.weight)
     return layer
@@ -28,10 +30,13 @@ class DiffusionEmbedding(nn.Module):
             persistent=False,
         )
         self.projection1 = nn.Linear(embedding_dim, projection_dim)
+        """linear transformation layer for side info """
         self.projection2 = nn.Linear(projection_dim, projection_dim)
+        """linear transformation layer for time series """
 
     def forward(self, diffusion_step):
-        # _gititem_ method not found in nn.Modelu TODO
+        """forward process"""
+        # warning: _gititem_ method not found in nn.Modelu 
         x = self.embedding[diffusion_step] #type:ignore 
         x = self.projection1(x)
         x = F.silu(x)
@@ -40,6 +45,8 @@ class DiffusionEmbedding(nn.Module):
         return x
 
     def _build_embedding(self, num_steps, dim=64):
+        """ s = {s_1:L} as side information, \\
+            for the diffusion step t, we use 128-dimensions temporal embedding shown in Eq (14)"""
         steps = torch.arange(num_steps).unsqueeze(1)  # (T,1)
         frequencies = 10.0 ** (torch.arange(dim) / (dim - 1) * 4.0).unsqueeze(0)  # (1,dim)
         table = steps * frequencies  # (T,dim)
@@ -58,8 +65,11 @@ class diff_CSDI(nn.Module):
         )
 
         self.input_projection = Conv1d_with_init(inputdim, self.channels, 1)
+        """input convolution layer from x_t^{ta}"""
         self.output_projection1 = Conv1d_with_init(self.channels, self.channels, 1)
+        """output convolution layer 1 to `\\epsilon_\\theta`"""
         self.output_projection2 = Conv1d_with_init(self.channels, 1, 1)
+        """output convolution layer 2 to `\\epsilon_\\theta`"""
         nn.init.zeros_(self.output_projection2.weight)
 
         self.residual_layers = nn.ModuleList(
@@ -73,8 +83,10 @@ class diff_CSDI(nn.Module):
                 for _ in range(config["layers"])
             ]
         )
+        """refined residual layers with residual channel C"""
 
     def forward(self, x, cond_info, diffusion_step):
+        """forward process"""
         B, inputdim, K, L = x.shape
 
         x = x.reshape(B, inputdim, K * L)

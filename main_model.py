@@ -50,6 +50,7 @@ class CSDI_base(nn.Module):
         self.alpha_torch = torch.tensor(self.alpha).float().to(self.device).unsqueeze(1).unsqueeze(1)
 
     def time_embedding(self, pos, d_model=128):
+        """time embedding of s = {s_1:L} to learn the temporal dependency, shown in Eq (13)"""
         pe = torch.zeros(pos.shape[0], pos.shape[1], d_model).to(self.device)
         position = pos.unsqueeze(2)
         div_term = 1 / torch.pow(
@@ -60,6 +61,7 @@ class CSDI_base(nn.Module):
         return pe
 
     def get_randmask(self, observed_mask):
+        """mask oberseved values as missing ones by random strategy"""
         rand_for_mask = torch.rand_like(observed_mask) * observed_mask
         rand_for_mask = rand_for_mask.reshape(len(rand_for_mask), -1)
         for i in range(len(observed_mask)):
@@ -71,6 +73,7 @@ class CSDI_base(nn.Module):
         return cond_mask
 
     def get_hist_mask(self, observed_mask, for_pattern_mask=None):
+        """mask by Historical strategy or Mix strategy"""
         if for_pattern_mask is None:
             for_pattern_mask = observed_mask
         rand_mask=[] #expand variable scope
@@ -87,6 +90,7 @@ class CSDI_base(nn.Module):
         return cond_mask
 
     def get_side_info(self, observed_tp, cond_mask):
+        """ time embedding and categorical feature embedding for K features"""
         B, K, L = cond_mask.shape
 
         time_embed = self.time_embedding(observed_tp, self.emb_time_dim)  # (B,L,emb)
@@ -108,6 +112,7 @@ class CSDI_base(nn.Module):
     def calc_loss_valid(
         self, observed_data, cond_mask, observed_mask, side_info, is_train
     ):
+        """get loss function curve in all epoch"""
         loss_sum = 0
         for t in range(self.num_steps):  # calculate loss for all t
             loss = self.calc_loss(
@@ -119,6 +124,7 @@ class CSDI_base(nn.Module):
     def calc_loss(
         self, observed_data, cond_mask, observed_mask, side_info, is_train, set_t=-1
     ):
+        """calculate loss function"""
         B, K, L = observed_data.shape
         if is_train != 1:  # for validation
             t = (torch.ones(B) * set_t).long().to(self.device)
@@ -139,6 +145,7 @@ class CSDI_base(nn.Module):
         return loss
 
     def set_input_to_diffmodel(self, noisy_data, observed_data, cond_mask):
+        """concanate time embedding with feature ones, not actually transfering input into diffWave model"""
         if self.is_unconditional == True:
             total_input = noisy_data.unsqueeze(1)  # (B,1,K,L)
         else:
@@ -149,6 +156,15 @@ class CSDI_base(nn.Module):
         return total_input
 
     def impute(self, observed_data, cond_mask, side_info, n_samples):
+        """time series imputation with given observed values and side information
+
+        PARAMETER
+        ------
+        `observed_data`: observed data array and not masked\\
+        `cond_mask`: conditional mask array\\
+        `side_info`:time and feature embedding input\\
+        `n_samples`: count of samples to impute
+        """
         B, K, L = observed_data.shape
 
         imputed_samples = torch.zeros(B, n_samples, K, L).to(self.device)
@@ -165,11 +181,13 @@ class CSDI_base(nn.Module):
 
             current_sample = torch.randn_like(observed_data)
 
+            #reverse process defined as Markov chain
             for t in range(self.num_steps - 1, -1, -1):
                 if self.is_unconditional == True:
                     diff_input = cond_mask * noisy_cond_history[t] + (1.0 - cond_mask) * current_sample
                     diff_input = diff_input.unsqueeze(1)  # (B,1,K,L)
                 else:
+                    #same as set_input_to_diffmodel, replacing noise with current sample
                     cond_obs = (cond_mask * observed_data).unsqueeze(1)
                     noisy_target = ((1 - cond_mask) * current_sample).unsqueeze(1)
                     diff_input = torch.cat([cond_obs, noisy_target], dim=1)  # (B,2,K,L)
@@ -190,6 +208,7 @@ class CSDI_base(nn.Module):
         return imputed_samples
 
     def forward(self, batch, is_train=1):
+        """forward process defined as Markov chain"""
         (
             observed_data,
             observed_mask,
@@ -198,7 +217,10 @@ class CSDI_base(nn.Module):
             for_pattern_mask,
             _,
         ) = self.process_data(batch)
+
+        #summon mask array by preset strategy
         if is_train == 0:
+            #validation mode
             cond_mask = gt_mask
         elif self.target_strategy != "random":
             cond_mask = self.get_hist_mask(
@@ -209,11 +231,13 @@ class CSDI_base(nn.Module):
 
         side_info = self.get_side_info(observed_tp, cond_mask)
 
+        #quite an effortless way
         loss_func = self.calc_loss if is_train == 1 else self.calc_loss_valid
 
         return loss_func(observed_data, cond_mask, observed_mask, side_info, is_train)
 
     def evaluate(self, batch, n_samples):
+        """this should be renamed as `predict`, which doesn't actually calculate KPIs, return imputed samples """
         (
             observed_data,
             observed_mask,
@@ -236,7 +260,7 @@ class CSDI_base(nn.Module):
         return samples, observed_data, target_mask, observed_mask, observed_tp
     
     def process_data(self, batch)->tuple:
-        """virtual method in base class, need to be implemented."""
+        """virtual method in base class, need to be overriden."""
         raise NotImplementedError("virtual method")
 
 
@@ -273,6 +297,8 @@ class CSDI_Physio(CSDI_base):
         super(CSDI_Physio, self).__init__(target_dim, config, device)
 
     def process_data(self, batch):
+        """convert batch data into :\\
+            oberved data, mask for hidden, timestamp, gt mask, zero-array for cutting"""
         observed_data = batch["observed_data"].to(self.device).float()
         observed_mask = batch["observed_mask"].to(self.device).float()
         observed_tp = batch["timepoints"].to(self.device).float()

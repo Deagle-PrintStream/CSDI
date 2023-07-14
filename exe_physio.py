@@ -3,12 +3,15 @@ import torch
 import datetime
 import json
 import yaml
-import os
+import os, sys  # for relative file path
+
+from line_profiler import LineProfiler
 
 from main_model import CSDI_Physio
 from dataset_physio import get_dataloader
 from CSDI_utils import train, evaluate
 
+# python exe_physio.py --config test.yaml --modelfolder physio_fold0_20230714_162137
 
 def parse_argument() -> argparse.Namespace:
     """read in arguments from command line, kernel arguments:
@@ -36,6 +39,7 @@ def read_config(cfg_path: str, is_unconditional, test_missing_ratio: float):
     """load the configuration of testment,
     including `train`, `model` and `diffusion` part,
     `diffusion` part passed to `CSDI_Physio` only"""
+    os.chdir(sys.path[0])
     path = "config/" + cfg_path
     try:
         with open(path, "r") as f:
@@ -51,7 +55,7 @@ def read_config(cfg_path: str, is_unconditional, test_missing_ratio: float):
 
 
 def save_config(nfold: int, config) -> str:
-    """save the config file for later checkment"""
+    """save config file for later checkment"""
     current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
     foldername = "./save/physio_fold" + str(nfold) + "_" + current_time + "/"
     print("model folder:", foldername)
@@ -59,6 +63,7 @@ def save_config(nfold: int, config) -> str:
     with open(foldername + "config.json", "w") as f:
         json.dump(config, f, indent=4)
     return foldername
+
 
 if __name__ == "__main__":
     args = parse_argument()
@@ -72,7 +77,9 @@ if __name__ == "__main__":
     )
     """initialize the model"""
     model = CSDI_Physio(config, args.device).to(args.device)
+
     if args.modelfolder == "":
+
         train(
             model,
             config["train"],
@@ -85,3 +92,4 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load(pretrain_model_path))
     """test the model"""
     evaluate(model, test_loader, nsample=args.nsample, scaler=1, foldername=foldername)
+

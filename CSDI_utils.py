@@ -4,32 +4,44 @@ from torch.optim import Adam
 from tqdm import tqdm
 import pickle
 
+__all__=["train","evaluate"]
 
 def train(
     model,
     config,
     train_loader,
     valid_loader=None,
-    valid_epoch_interval=5,
-    foldername="",
+    valid_epoch_interval:int=5,
+    foldername:str="",
 ):
+    """ train the model with given config files and dataset by `config` and `train_loader`,
+        save the model under to `foldername`
+        
+        PARAMETER
+        ------
+        `model`: subclass of `nn.Module`, target model to train \\
+        `config`: `dict`, only  `lr` and `epochs` are transfered\\
+        `train_loader`: `DataLoader` for training\\
+        `valid_loader`: `DataLoader` for validation, default is None\\
+        `valid_epoch_interval`: `int`, if `valid_loader` is not None, after each amount of this steps, check the performance\\
+        `foldername`: folder to save the trained model
+        """
+    
+    #initalize the optimizer
     optimizer = Adam(model.parameters(), lr=config["lr"], weight_decay=1e-6)
-    output_path:str=""
-    if foldername != "":
-        output_path = foldername + "/model.pth"
-    else:
-        output_path="./model.pth"
 
+    #learning rate decay with tricky milestones
     p1 = int(0.75 * config["epochs"])
     p2 = int(0.9 * config["epochs"])
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=[p1, p2], gamma=0.1
     )
 
-    best_valid_loss = 1e10
+    best_valid_loss = np.inf 
     for epoch_no in range(config["epochs"]):
         avg_loss = 0
         model.train()
+        #training part
         with tqdm(train_loader, mininterval=5.0, maxinterval=50.0) as it:
             for batch_no, train_batch in enumerate(it, start=1):
                 optimizer.zero_grad()
@@ -45,7 +57,8 @@ def train(
                     },
                     refresh=False,
                 )
-            lr_scheduler.step()
+            lr_scheduler.step() #this one should come after validation part?
+        #validation part
         if valid_loader is not None and (epoch_no + 1) % valid_epoch_interval == 0:
             model.eval()
             avg_loss_valid = 0
@@ -53,7 +66,7 @@ def train(
             with torch.no_grad():
                 with tqdm(valid_loader, mininterval=5.0, maxinterval=50.0) as it:
                     for batch_no, valid_batch in enumerate(it, start=1):
-                        loss = model(valid_batch, is_train=0)
+                        loss = model(valid_batch, is_train=0) #loss calculation for validation part
                         avg_loss_valid += loss.item()
                         it.set_postfix(
                             ordered_dict={
@@ -71,11 +84,22 @@ def train(
                     epoch_no,
                 )
 
+        #learning rate adjustment
+        #lr_scheduler.step()
+
+    #save the model
+    output_path:str=""
+    if foldername != "":
+        output_path = foldername + "/model.pth"
+    else:
+        output_path="./model.pth"
     if foldername != "":
         torch.save(model.state_dict(), output_path)
 
+"""sub indicator functions for evalutation"""
 
 def quantile_loss(target, forecast, q: float, eval_points) -> float:
+    """quantile loss """
     #conversion from tensor to float TODO
     return 2 * torch.sum(
         torch.abs((forecast - target) * eval_points * ((target <= forecast) * 1.0 - q))
@@ -83,10 +107,13 @@ def quantile_loss(target, forecast, q: float, eval_points) -> float:
 
 
 def calc_denominator(target, eval_points):
+    """calculate the denominator to normalize quantile_loss """
     return torch.sum(torch.abs(target * eval_points))
 
 
 def calc_quantile_CRPS(target, forecast, eval_points, mean_scaler, scaler):
+    """ Calculate continuous ranked probability score, integrated of the quantile loss from all quantile levels\\
+        We actually approximates CRPS with discretized quantile levels with 0.05 ticks """
     target = target * scaler + mean_scaler
     forecast = forecast * scaler + mean_scaler
 
@@ -104,7 +131,18 @@ def calc_quantile_CRPS(target, forecast, eval_points, mean_scaler, scaler):
     return CRPS.item() / len(quantiles) #type:ignore
 
 
-def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldername=""):
+def evaluate(model, test_loader, nsample:int=100, scaler:float=1, mean_scaler:float=0, foldername=""):
+    """evaluate the performance of model on testment dataset
+    
+    PARAMETER
+    =====
+    `model`: target model\\
+    `test_loader`: `DataLoader`\\
+    `nsample`: sample amount to approximate the probability distribution\\ 
+    `scaler` `float`, scaler for CPRS, default is 1\\
+    `mean_scaler`: `float`, offset of all targets within CPRS ,default is 0\\
+    `foldername`: path to save output samples    
+    """
 
     with torch.no_grad():
         model.eval()
@@ -134,9 +172,11 @@ def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldernam
                 all_observed_time.append(observed_time)
                 all_generated_samples.append(samples)
 
+                "Root mean squared error RMSE"
                 mse_current = (
                     ((samples_median.values - c_target) * eval_points) ** 2
                 ) * (scaler ** 2)
+                "Mean absolute error MAE"
                 mae_current = (
                     torch.abs((samples_median.values - c_target) * eval_points) 
                 ) * scaler
@@ -154,6 +194,7 @@ def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldernam
                     refresh=True,
                 )
 
+            #save the predicted imputated samples
             with open(
                 foldername + "/generated_outputs_nsample" + str(nsample) + ".pk", "wb"
             ) as f:
@@ -180,6 +221,7 @@ def evaluate(model, test_loader, nsample=100, scaler=1, mean_scaler=0, foldernam
                 all_target, all_generated_samples, all_evalpoint, mean_scaler, scaler
             )
 
+            #save the performance indicators
             with open(
                 foldername + "/result_nsample" + str(nsample) + ".pk", "wb"
             ) as f:
