@@ -6,12 +6,12 @@ import yaml
 import os, sys  # for relative file path
 
 from line_profiler import LineProfiler
+from logging import Logger
 
 from main_model import CSDI_Physio
 from dataset_physio import get_dataloader
 from CSDI_utils import train, evaluate
 
-# python exe_physio.py --config test.yaml --modelfolder physio_fold0_20230714_162137
 
 def parse_argument() -> argparse.Namespace:
     """read in arguments from command line, kernel arguments:
@@ -82,7 +82,8 @@ if __name__ == "__main__":
 
         train(
             model,
-            config["train"],
+            config["train"]["lr"],
+            config["train"]["epochs"],
             train_loader,
             valid_loader=valid_loader,
             foldername=foldername,
@@ -92,4 +93,3 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load(pretrain_model_path))
     """test the model"""
     evaluate(model, test_loader, nsample=args.nsample, scaler=1, foldername=foldername)
-

@@ -13,6 +13,8 @@ class CSDI_base(nn.Module):
         configuration of diffusion model:
         hyperparameters: beta sequence, alpha sequence
         """
+        if torch.cuda.is_available()==False and torch.backends.mps.is_available()==False: #type:ignore
+            device="cpu"
         self.device = device
         self.target_dim = target_dim
 
@@ -24,21 +26,20 @@ class CSDI_base(nn.Module):
         self.emb_total_dim = self.emb_time_dim + self.emb_feature_dim
         if self.is_unconditional == False:
             self.emb_total_dim += 1  # for conditional mask
+        # parameters for diffusion models
+        config_diff = config["diffusion"]
+        config_diff["side_dim"] = self.emb_total_dim
+        self.num_steps = config_diff["num_steps"]
+
         self.embed_layer = nn.Embedding(
             num_embeddings=self.target_dim, embedding_dim=self.emb_feature_dim
         )
 
-        config_diff = config["diffusion"]
-        config_diff["side_dim"] = self.emb_total_dim
+        self.diffmodel = diff_CSDI(config_diff, inputdim=1 if self.is_unconditional == True else 2)
 
-        input_dim = 1 if self.is_unconditional == True else 2
-        self.diffmodel = diff_CSDI(config_diff, input_dim)
-
-        # parameters for diffusion models
-        self.num_steps = config_diff["num_steps"]
         if config_diff["schedule"] == "quad":
             self.beta = np.linspace(
-                config_diff["beta_start"] ** 0.5, config_diff["beta_end"] ** 0.5, self.num_steps
+                np.sqrt(config_diff["beta_start"]), np.sqrt(config_diff["beta_end"]) , self.num_steps
             ) ** 2
         elif config_diff["schedule"] == "linear":
             self.beta = np.linspace(
@@ -49,7 +50,7 @@ class CSDI_base(nn.Module):
         self.alpha = np.cumprod(self.alpha_hat)
         self.alpha_torch = torch.tensor(self.alpha).float().to(self.device).unsqueeze(1).unsqueeze(1)
 
-    def time_embedding(self, pos, d_model=128):
+    def time_embedding(self, pos, feature_dim:int,d_model:int=128):
         """time embedding of s = {s_1:L} to learn the temporal dependency, shown in Eq (13)"""
         pe = torch.zeros(pos.shape[0], pos.shape[1], d_model).to(self.device)
         position = pos.unsqueeze(2)
@@ -58,7 +59,7 @@ class CSDI_base(nn.Module):
         )
         pe[:, :, 0::2] = torch.sin(position * div_term)
         pe[:, :, 1::2] = torch.cos(position * div_term)
-        return pe
+        return pe.unsqueeze(2).expand(-1, -1, feature_dim, -1)
 
     def get_randmask(self, observed_mask):
         """mask oberseved values as missing ones by random strategy"""
@@ -81,6 +82,7 @@ class CSDI_base(nn.Module):
             rand_mask = self.get_randmask(observed_mask)
 
         cond_mask = observed_mask.clone()
+        #integrale history strategy and mix strategy together in a quite quirky way
         for i in range(len(cond_mask)):
             mask_choice = np.random.rand()
             if self.target_strategy == "mix" and mask_choice > 0.5:
@@ -93,8 +95,7 @@ class CSDI_base(nn.Module):
         """ time embedding and categorical feature embedding for K features"""
         B, K, L = cond_mask.shape
 
-        time_embed = self.time_embedding(observed_tp, self.emb_time_dim)  # (B,L,emb)
-        time_embed = time_embed.unsqueeze(2).expand(-1, -1, K, -1)
+        time_embed = self.time_embedding(observed_tp,feature_dim=K, d_model=self.emb_time_dim) 
         feature_embed = self.embed_layer(
             torch.arange(self.target_dim).to(self.device)
         )  # (K,emb)
@@ -132,7 +133,7 @@ class CSDI_base(nn.Module):
             t = torch.randint(0, self.num_steps, [B]).to(self.device)
         current_alpha = self.alpha_torch[t]  # (B,1,1)
         noise = torch.randn_like(observed_data)
-        noisy_data = (current_alpha ** 0.5) * observed_data + (1.0 - current_alpha) ** 0.5 * noise
+        noisy_data = torch.sqrt(current_alpha ) * observed_data + torch.sqrt(1.0 - current_alpha)  * noise
 
         total_input = self.set_input_to_diffmodel(noisy_data, observed_data, cond_mask)
 
@@ -176,7 +177,7 @@ class CSDI_base(nn.Module):
                 noisy_obs = observed_data
                 for t in range(self.num_steps):
                     noise = torch.randn_like(noisy_obs)
-                    noisy_obs = (self.alpha_hat[t] ** 0.5) * noisy_obs + self.beta[t] ** 0.5 * noise
+                    noisy_obs = torch.sqrt(self.alpha_hat[t]) * noisy_obs + torch.sqrt(self.beta[t]) * noise
                     noisy_cond_history.append(noisy_obs * cond_mask)
 
             current_sample = torch.randn_like(observed_data)
@@ -193,15 +194,15 @@ class CSDI_base(nn.Module):
                     diff_input = torch.cat([cond_obs, noisy_target], dim=1)  # (B,2,K,L)
                 predicted = self.diffmodel(diff_input, side_info, torch.tensor([t]).to(self.device))
 
-                coeff1 = 1 / self.alpha_hat[t] ** 0.5
-                coeff2 = (1 - self.alpha_hat[t]) / (1 - self.alpha[t]) ** 0.5
+                coeff1 = 1 / torch.sqrt(self.alpha_hat[t])
+                coeff2 = (1 - self.alpha_hat[t]) / torch.sqrt(1 - self.alpha[t]) 
                 current_sample = coeff1 * (current_sample - coeff2 * predicted)
 
                 if t > 0:
                     noise = torch.randn_like(current_sample)
-                    sigma = (
+                    sigma = torch.sqrt(
                         (1.0 - self.alpha[t - 1]) / (1.0 - self.alpha[t]) * self.beta[t]
-                    ) ** 0.5
+                    ) 
                     current_sample += sigma * noise
 
             imputed_samples[:, i] = current_sample.detach()
@@ -231,7 +232,6 @@ class CSDI_base(nn.Module):
 
         side_info = self.get_side_info(observed_tp, cond_mask)
 
-        #quite an effortless way
         loss_func = self.calc_loss if is_train == 1 else self.calc_loss_valid
 
         return loss_func(observed_data, cond_mask, observed_mask, side_info, is_train)

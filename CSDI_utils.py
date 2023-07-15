@@ -8,7 +8,8 @@ __all__=["train","evaluate"]
 
 def train(
     model,
-    config,
+    learning_rate:float,
+    epoches:int,
     train_loader,
     valid_loader=None,
     valid_epoch_interval:int=5,
@@ -28,19 +29,19 @@ def train(
         """
     
     #initalize the optimizer
-    optimizer = Adam(model.parameters(), lr=config["lr"], weight_decay=1e-6)
+    optimizer = Adam(model.parameters(), lr=learning_rate, weight_decay=1e-6)
 
     #learning rate decay with tricky milestones
-    p1 = int(0.75 * config["epochs"])
-    p2 = int(0.9 * config["epochs"])
+    p1 = int(0.75 * epoches)
+    p2 = int(0.9 * epoches)
     lr_scheduler = torch.optim.lr_scheduler.MultiStepLR(
         optimizer, milestones=[p1, p2], gamma=0.1
     )
 
     best_valid_loss = np.inf 
-    for epoch_no in range(config["epochs"]):
+    for epoch_no in range(epoches):
         avg_loss = 0
-        model.train()
+        model.train() #set to training mode
         #training part
         with tqdm(train_loader, mininterval=5.0, maxinterval=50.0) as it:
             for batch_no, train_batch in enumerate(it, start=1):
@@ -60,7 +61,7 @@ def train(
             lr_scheduler.step() #this one should come after validation part?
         #validation part
         if valid_loader is not None and (epoch_no + 1) % valid_epoch_interval == 0:
-            model.eval()
+            model.eval() #set to testing mode
             avg_loss_valid = 0
             batch_no:int=0 #number of batch
             with torch.no_grad():
@@ -117,7 +118,8 @@ def calc_quantile_CRPS(target, forecast, eval_points, mean_scaler, scaler):
     target = target * scaler + mean_scaler
     forecast = forecast * scaler + mean_scaler
 
-    quantiles = np.arange(0.05, 1.0, 0.05)
+    tick:float=0.05
+    quantiles = np.arange(tick, 1.0, tick)
     denom = calc_denominator(target, eval_points)
     CRPS = 0
     for i in range(len(quantiles)):
@@ -127,11 +129,19 @@ def calc_quantile_CRPS(target, forecast, eval_points, mean_scaler, scaler):
         q_pred = torch.cat(q_pred, 0)
         q_loss = quantile_loss(target, q_pred, quantiles[i], eval_points)
         CRPS += q_loss / denom
-    #unknown member of float type item() TODO
+
     return CRPS.item() / len(quantiles) #type:ignore
 
+def calc_RMSE(median,c_target,eval_points,scaler:float=1):
+    """Root mean squared error RMSE"""
+    return ((median - c_target) * eval_points) ** 2* (scaler ** 2)
 
-def evaluate(model, test_loader, nsample:int=100, scaler:float=1, mean_scaler:float=0, foldername=""):
+def calc_MAE(median,c_target,eval_points,scaler:float=1):
+    """Mean absolute error MAE"""
+    return ((median - c_target) * eval_points) *scaler
+
+
+def evaluate(model:torch.nn.Module, test_loader, nsample:int=100, scaler:float=1, mean_scaler:float=0, foldername=""):
     """evaluate the performance of model on testment dataset
     
     PARAMETER
@@ -145,7 +155,7 @@ def evaluate(model, test_loader, nsample:int=100, scaler:float=1, mean_scaler:fl
     """
 
     with torch.no_grad():
-        model.eval()
+        model.eval() #switch to test mode
         mse_total = 0
         mae_total = 0
         evalpoints_total = 0
@@ -157,9 +167,9 @@ def evaluate(model, test_loader, nsample:int=100, scaler:float=1, mean_scaler:fl
         all_generated_samples = []
         with tqdm(test_loader, mininterval=5.0, maxinterval=50.0) as it:
             for batch_no, test_batch in enumerate(it, start=1):
-                output = model.evaluate(test_batch, nsample)
-
-                samples, c_target, eval_points, observed_points, observed_time = output
+                samples, c_target, eval_points, observed_points, observed_time = \
+                    model.evaluate(test_batch, nsample) #type:ignore
+                
                 samples = samples.permute(0, 1, 3, 2)  # (B,nsample,L,K)
                 c_target = c_target.permute(0, 2, 1)  # (B,L,K)
                 eval_points = eval_points.permute(0, 2, 1)
@@ -172,14 +182,8 @@ def evaluate(model, test_loader, nsample:int=100, scaler:float=1, mean_scaler:fl
                 all_observed_time.append(observed_time)
                 all_generated_samples.append(samples)
 
-                "Root mean squared error RMSE"
-                mse_current = (
-                    ((samples_median.values - c_target) * eval_points) ** 2
-                ) * (scaler ** 2)
-                "Mean absolute error MAE"
-                mae_current = (
-                    torch.abs((samples_median.values - c_target) * eval_points) 
-                ) * scaler
+                mse_current=calc_RMSE(samples_median.values,c_target,eval_points,scaler)
+                mae_current=calc_MAE(samples_median.values,c_target,eval_points,scaler)
 
                 mse_total += mse_current.sum().item()
                 mae_total += mae_current.sum().item()
@@ -194,45 +198,41 @@ def evaluate(model, test_loader, nsample:int=100, scaler:float=1, mean_scaler:fl
                     refresh=True,
                 )
 
-            #save the predicted imputated samples
-            with open(
-                foldername + "/generated_outputs_nsample" + str(nsample) + ".pk", "wb"
-            ) as f:
-                all_target = torch.cat(all_target, dim=0)
-                all_evalpoint = torch.cat(all_evalpoint, dim=0)
-                all_observed_point = torch.cat(all_observed_point, dim=0)
-                all_observed_time = torch.cat(all_observed_time, dim=0)
-                all_generated_samples = torch.cat(all_generated_samples, dim=0)
+        all_generated_samples = torch.cat(all_generated_samples, dim=0)
+        all_target = torch.cat(all_target, dim=0)
+        all_evalpoint = torch.cat(all_evalpoint, dim=0)
+        all_observed_point = torch.cat(all_observed_point, dim=0)
+        all_observed_time = torch.cat(all_observed_time, dim=0)
+        #save the predicted imputated samples
+        with open(
+            foldername + "/generated_outputs_nsample" + str(nsample) + ".pk", "wb"
+        ) as f:
 
-                pickle.dump(
-                    [
-                        all_generated_samples,
-                        all_target,
-                        all_evalpoint,
-                        all_observed_point,
-                        all_observed_time,
-                        scaler,
-                        mean_scaler,
-                    ],
-                    f,
-                )
-
-            CRPS = calc_quantile_CRPS(
-                all_target, all_generated_samples, all_evalpoint, mean_scaler, scaler
+            pickle.dump(
+                [
+                    all_generated_samples,
+                    all_target,
+                    all_evalpoint,
+                    all_observed_point,
+                    all_observed_time,
+                    scaler,
+                    mean_scaler,
+                ],
+                f,
             )
 
-            #save the performance indicators
-            with open(
-                foldername + "/result_nsample" + str(nsample) + ".pk", "wb"
-            ) as f:
-                pickle.dump(
-                    [
-                        np.sqrt(mse_total / evalpoints_total),
-                        mae_total / evalpoints_total,
-                        CRPS,
-                    ],
-                    f,
-                )
-                print("RMSE:", np.sqrt(mse_total / evalpoints_total))
-                print("MAE:", mae_total / evalpoints_total)
-                print("CRPS:", CRPS)
+        CRPS = calc_quantile_CRPS(
+            all_target, all_generated_samples, all_evalpoint, mean_scaler, scaler
+        )
+        MSE=np.sqrt(mse_total / evalpoints_total)
+        MAE=mae_total / evalpoints_total
+
+        #save the performance indicators
+        with open(
+            foldername + "/result_nsample" + str(nsample) + ".pk", "wb"
+        ) as f:
+            pickle.dump([MSE,MAE,CRPS,],f,)
+        #print KPIs in entire process
+        print("RMSE:", np.sqrt(mse_total / evalpoints_total))
+        print("MAE:", mae_total / evalpoints_total)
+        print("CRPS:", CRPS)

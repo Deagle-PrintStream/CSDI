@@ -20,13 +20,15 @@ def Conv1d_with_init(in_channels, out_channels, kernel_size=1):
 
 
 class DiffusionEmbedding(nn.Module):
-    def __init__(self, num_steps, embedding_dim:int=128, projection_dim=None):
+    def __init__(self, num_steps, embedding_dim: int = 128, projection_dim=None):
         super().__init__()
         if projection_dim is None:
             projection_dim = embedding_dim
         self.register_buffer(
             "embedding",
-            self._build_embedding(num_steps, embedding_dim // 2), #type conversion bug fixed
+            self.__build_embedding(
+                num_steps, embedding_dim // 2
+            ),  # type conversion bug fixed
             persistent=False,
         )
         self.projection1 = nn.Linear(embedding_dim, projection_dim)
@@ -36,19 +38,21 @@ class DiffusionEmbedding(nn.Module):
 
     def forward(self, diffusion_step):
         """forward process"""
-        # warning: _gititem_ method not found in nn.Modelu 
-        x = self.embedding[diffusion_step] #type:ignore 
+        # warning: _gititem_ method not found in nn.Modelu
+        x = self.embedding[diffusion_step]  # type:ignore
         x = self.projection1(x)
         x = F.silu(x)
         x = self.projection2(x)
         x = F.silu(x)
         return x
 
-    def _build_embedding(self, num_steps, dim=64):
+    def __build_embedding(self, num_steps, dim=64):
         """ s = {s_1:L} as side information, \\
             for the diffusion step t, we use 128-dimensions temporal embedding shown in Eq (14)"""
         steps = torch.arange(num_steps).unsqueeze(1)  # (T,1)
-        frequencies = 10.0 ** (torch.arange(dim) / (dim - 1) * 4.0).unsqueeze(0)  # (1,dim)
+        frequencies = 10.0 ** (torch.arange(dim) / (dim - 1) * 4.0).unsqueeze(
+            0
+        )  # (1,dim)
         table = steps * frequencies  # (T,dim)
         table = torch.cat([torch.sin(table), torch.cos(table)], dim=1)  # (T,dim*2)
         return table
@@ -151,7 +155,7 @@ class ResidualBlock(nn.Module):
         y = self.forward_feature(y, base_shape)  # (B,channel,K*L)
         y = self.mid_projection(y)  # (B,2*channel,K*L)
 
-        _, cond_dim, _, _ = cond_info.shape
+        cond_dim = cond_info.shape[1]
         cond_info = cond_info.reshape(B, cond_dim, K * L)
         cond_info = self.cond_projection(cond_info)  # (B,2*channel,K*L)
         y = y + cond_info
