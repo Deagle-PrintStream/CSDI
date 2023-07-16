@@ -126,6 +126,7 @@ class CSDI_base(nn.Module):
         self, observed_data, cond_mask, observed_mask, side_info, is_train, set_t=-1
     ):
         """calculate loss function"""
+        #major time consumer
         B, K, L = observed_data.shape
         if is_train != 1:  # for validation
             t = (torch.ones(B) * set_t).long().to(self.device)
@@ -133,7 +134,7 @@ class CSDI_base(nn.Module):
             t = torch.randint(0, self.num_steps, [B]).to(self.device)
         current_alpha = self.alpha_torch[t]  # (B,1,1)
         noise = torch.randn_like(observed_data)
-        noisy_data = torch.sqrt(current_alpha ) * observed_data + torch.sqrt(1.0 - current_alpha)  * noise
+        noisy_data = torch.sqrt(current_alpha ) * observed_data + torch.sqrt(1.0 - current_alpha)  * noise #sqrt from numpy or torch  TODO
 
         total_input = self.set_input_to_diffmodel(noisy_data, observed_data, cond_mask)
 
@@ -142,7 +143,7 @@ class CSDI_base(nn.Module):
         target_mask = observed_mask - cond_mask
         residual = (noise - predicted) * target_mask
         num_eval = target_mask.sum()
-        loss = (residual ** 2).sum() / (num_eval if num_eval > 0 else 1)
+        loss = (residual ** 2).sum() / (num_eval if num_eval > 0 else 1) #another time consumer line TODO
         return loss
 
     def set_input_to_diffmodel(self, noisy_data, observed_data, cond_mask):
@@ -177,7 +178,7 @@ class CSDI_base(nn.Module):
                 noisy_obs = observed_data
                 for t in range(self.num_steps):
                     noise = torch.randn_like(noisy_obs)
-                    noisy_obs = torch.sqrt(self.alpha_hat[t]) * noisy_obs + torch.sqrt(self.beta[t]) * noise
+                    noisy_obs = np.sqrt(self.alpha_hat[t]) * noisy_obs + np.sqrt(self.beta[t]) * noise
                     noisy_cond_history.append(noisy_obs * cond_mask)
 
             current_sample = torch.randn_like(observed_data)
@@ -194,13 +195,13 @@ class CSDI_base(nn.Module):
                     diff_input = torch.cat([cond_obs, noisy_target], dim=1)  # (B,2,K,L)
                 predicted = self.diffmodel(diff_input, side_info, torch.tensor([t]).to(self.device))
 
-                coeff1 = 1 / torch.sqrt(self.alpha_hat[t])
-                coeff2 = (1 - self.alpha_hat[t]) / torch.sqrt(1 - self.alpha[t]) 
+                coeff1 = 1 / np.sqrt(self.alpha_hat[t])
+                coeff2 = (1 - self.alpha_hat[t]) / np.sqrt(1 - self.alpha[t]) 
                 current_sample = coeff1 * (current_sample - coeff2 * predicted)
 
                 if t > 0:
                     noise = torch.randn_like(current_sample)
-                    sigma = torch.sqrt(
+                    sigma = np.sqrt(
                         (1.0 - self.alpha[t - 1]) / (1.0 - self.alpha[t]) * self.beta[t]
                     ) 
                     current_sample += sigma * noise

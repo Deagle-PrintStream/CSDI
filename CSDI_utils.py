@@ -8,7 +8,7 @@ import logging
 __all__=["train","evaluate"]
 
 def train(
-    model,
+    model:torch.nn.Module,
     learning_rate:float,
     epoches:int,
     train_loader,
@@ -42,26 +42,30 @@ def train(
     best_valid_loss = np.inf 
     logging.info(f"training start with epochs:{epoches},learning_rate:{learning_rate}")
     for epoch_no in range(epoches):
-        avg_loss = 0
-        model.train() #set to training mode
+        avg_loss = 0 
+        loss_temp=torch.zeros((1,1)).to(("cuda")) #temp container to sum up total loss
+        model.train(True) #set to training mode
+
         #training part
         with tqdm(train_loader, mininterval=5.0, maxinterval=50.0) as it:
+            batch_no=0 #since we don't know the preset batch size, we have to get from iterator
             for batch_no, train_batch in enumerate(it, start=1):
                 optimizer.zero_grad()
 
-                loss = model(train_batch)
+                loss = model(train_batch) #major time cosumed as expected
                 loss.backward()
-                avg_loss += loss.item()
+                loss_temp+=loss 
+                #by shifting the loss sum up calculation into GPU and decrease the hit of `item()`, time saved a lot
                 optimizer.step()
                 it.set_postfix(
                     ordered_dict={
-                        "avg_epoch_loss": avg_loss / batch_no,
+                        #"avg_epoch_loss": avg_loss / batch_no, #we no more know the average loss since we want to reduce the hit of `item()`
                         "epoch": epoch_no,
                     },
                     refresh=False,
-                )
-                logging.info(f"avg_epoch_loss:{avg_loss / batch_no},epoch:{epoch_no}")
+                )            
             lr_scheduler.step() #this one should come after validation part?
+        avg_loss+=loss_temp.item()/batch_no
         #validation part
         if valid_loader is not None and (epoch_no + 1) % valid_epoch_interval == 0:
             model.eval() #set to testing mode
@@ -79,6 +83,7 @@ def train(
                             },
                             refresh=False,
                         )
+                        
             if best_valid_loss > avg_loss_valid:
                 best_valid_loss = avg_loss_valid
                 print(
@@ -87,6 +92,7 @@ def train(
                     "at",
                     epoch_no,
                 )
+                logging.info(f"best loss:{avg_loss_valid / batch_no},epoch:{epoch_no}")
 
         #learning rate adjustment
         #lr_scheduler.step()

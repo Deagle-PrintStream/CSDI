@@ -182,16 +182,16 @@ def get_dataloader(
 
     train_dataset = Physio_Dataset(
         use_index_list=train_index, missing_ratio=missing_ratio, seed=seed
-    )
+    ) #lot of time cost, should be diminished since `dataset` has inited
     train_loader = DataLoader(
         train_dataset, batch_size=batch_size, shuffle=True
     )  # minor type bug fixed
     valid_dataset = Physio_Dataset(
         use_index_list=valid_index, missing_ratio=missing_ratio, seed=seed
-    )
+    )#lot of time cost 
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     test_dataset = Physio_Dataset(
         use_index_list=test_index, missing_ratio=missing_ratio, seed=seed
-    )
+    )#lot of time cost 
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     return train_loader, valid_loader, test_loader

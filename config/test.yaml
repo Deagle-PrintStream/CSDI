@@ -2,7 +2,7 @@
 #type: args
 
 train:
-  epochs: 10 #diminished
+  epochs: 2 #diminished
   batch_size: 8 #diminished
   lr: 1.0e-3
 
@@ -13,7 +13,7 @@ diffusion:
   diffusion_embedding_dim: 64 #diminished
   beta_start: 0.0001
   beta_end: 0.5
-  num_steps: 20 #diminished
+  num_steps: 10 #diminished
   schedule: "quad"
 
 model:
