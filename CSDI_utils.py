@@ -3,6 +3,7 @@ import torch
 from torch.optim import Adam
 from tqdm import tqdm
 import pickle
+import logging
 
 __all__=["train","evaluate"]
 
@@ -39,6 +40,7 @@ def train(
     )
 
     best_valid_loss = np.inf 
+    logging.info(f"training start with epochs:{epoches},learning_rate:{learning_rate}")
     for epoch_no in range(epoches):
         avg_loss = 0
         model.train() #set to training mode
@@ -58,6 +60,7 @@ def train(
                     },
                     refresh=False,
                 )
+                logging.info(f"avg_epoch_loss:{avg_loss / batch_no},epoch:{epoch_no}")
             lr_scheduler.step() #this one should come after validation part?
         #validation part
         if valid_loader is not None and (epoch_no + 1) % valid_epoch_interval == 0:
@@ -88,6 +91,7 @@ def train(
         #learning rate adjustment
         #lr_scheduler.step()
 
+    logging.info(f"training completed with best_valid_loss:{best_valid_loss}")
     #save the model
     output_path:str=""
     if foldername != "":
@@ -154,6 +158,7 @@ def evaluate(model:torch.nn.Module, test_loader, nsample:int=100, scaler:float=1
     `foldername`: path to save output samples    
     """
 
+    logging.info(f"evaluation start with nsample:{nsample}")
     with torch.no_grad():
         model.eval() #switch to test mode
         mse_total = 0
@@ -197,6 +202,7 @@ def evaluate(model:torch.nn.Module, test_loader, nsample:int=100, scaler:float=1
                     },
                     refresh=True,
                 )
+                logging.info(f"KPIs at batch_no:{batch_no}:MSE:{mse_current.sum().item()},MAE:{mae_current.sum().item()}")
 
         all_generated_samples = torch.cat(all_generated_samples, dim=0)
         all_target = torch.cat(all_target, dim=0)
@@ -233,6 +239,9 @@ def evaluate(model:torch.nn.Module, test_loader, nsample:int=100, scaler:float=1
         ) as f:
             pickle.dump([MSE,MAE,CRPS,],f,)
         #print KPIs in entire process
+        logging.info(f"RMSE:{ np.sqrt(mse_total / evalpoints_total)}")
+        logging.info(f"MAE:{ mae_total / evalpoints_total}")
+        logging.info(f"CRPS:{ CRPS}")
         print("RMSE:", np.sqrt(mse_total / evalpoints_total))
         print("MAE:", mae_total / evalpoints_total)
         print("CRPS:", CRPS)

@@ -4,9 +4,10 @@ import datetime
 import json
 import yaml
 import os, sys  # for relative file path
+import warnings
 
 from line_profiler import LineProfiler
-from logging import Logger
+import logging
 
 from main_model import CSDI_Physio
 from dataset_physio import get_dataloader
@@ -32,6 +33,7 @@ def parse_argument() -> argparse.Namespace:
 
     args = parser.parse_args()
     print(args)
+    logging.info(args)
     return args
 
 
@@ -39,7 +41,6 @@ def read_config(cfg_path: str, is_unconditional, test_missing_ratio: float):
     """load the configuration of testment,
     including `train`, `model` and `diffusion` part,
     `diffusion` part passed to `CSDI_Physio` only"""
-    os.chdir(sys.path[0])
     path = "config/" + cfg_path
     try:
         with open(path, "r") as f:
@@ -51,6 +52,7 @@ def read_config(cfg_path: str, is_unconditional, test_missing_ratio: float):
     config["model"]["test_missing_ratio"] = test_missing_ratio
 
     print(json.dumps(config, indent=4))
+    logging.info(json.dumps(config, indent=4))
     return config
 
 
@@ -62,10 +64,11 @@ def save_config(nfold: int, config) -> str:
     os.makedirs(foldername, exist_ok=True)
     with open(foldername + "config.json", "w") as f:
         json.dump(config, f, indent=4)
+    logging.info("config files saved at "+foldername)
     return foldername
 
 
-if __name__ == "__main__":
+def main() -> None:
     args = parse_argument()
     config = read_config(args.config, args.unconditional, args.testmissingratio)
     foldername = save_config(args.nfold, config)
@@ -93,3 +96,27 @@ if __name__ == "__main__":
         model.load_state_dict(torch.load(pretrain_model_path))
     """test the model"""
     evaluate(model, test_loader, nsample=args.nsample, scaler=1, foldername=foldername)
+
+
+if __name__ == "__main__":
+    warnings.filterwarnings("ignore")
+    os.chdir(sys.path[0])
+    current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    logging.basicConfig(
+        level=logging.DEBUG,
+        filename="./save/log" + current_time + ".log",
+        format="%(asctime)s %(message)s",
+        datefmt="%I:%M:%S ",
+    )
+
+    lp = LineProfiler()
+    lp.add_function(train)
+    lp.add_function(evaluate)
+    lp.add_function(get_dataloader)
+    lp.add_function(CSDI_Physio.evaluate)
+    lp.add_function(CSDI_Physio.forward)
+    lp_wrapper = lp(main)
+    lp_wrapper()
+
+    lp.print_stats()
+    lp.dump_stats("./save/profiler" + current_time + ".pk")

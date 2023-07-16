@@ -1,4 +1,5 @@
 import pickle
+import logging
 
 import os
 import re
@@ -64,7 +65,7 @@ def get_idlist():
     """get patient id from file names in 6 digital form and sort"""
     patient_id = []
     for filename in os.listdir("./data/physio/set-a"):
-        match = re.search(r"\d{6}", filename) #vscode warning fixed
+        match = re.search(r"\d{6}", filename)  # vscode warning fixed
         if match:
             patient_id.append(match.group())
     patient_id = np.sort(patient_id)
@@ -84,6 +85,12 @@ class Physio_Dataset(Dataset):
         )
 
         if os.path.isfile(path) == False:  # if datasetfile is none, create
+            logging.info(
+                "dataset loaded with physio_missing "
+                + str(missing_ratio)
+                + " and seed"
+                + str(seed)
+            )
             idlist = get_idlist()
             for id_ in idlist:
                 try:
@@ -142,7 +149,9 @@ class Physio_Dataset(Dataset):
         return len(self.use_index_list)
 
 
-def get_dataloader(seed=1, nfold:int=0, batch_size=16, missing_ratio=0.1): #minor type bug fixed
+def get_dataloader(
+    seed=1, nfold: int = 0, batch_size=16, missing_ratio=0.1
+):  # minor type bug fixed
 
     # only to obtain total length of dataset
     dataset = Physio_Dataset(missing_ratio=missing_ratio, seed=seed)
@@ -152,22 +161,31 @@ def get_dataloader(seed=1, nfold:int=0, batch_size=16, missing_ratio=0.1): #mino
     np.random.shuffle(indlist)
 
     # 5-fold test
-    start = (int)(nfold * 0.2 * len(dataset))
-    end = (int)((nfold + 1) * 0.2 * len(dataset))
+    test_ratio = 0.2
+    partition_size = int(len(dataset) * test_ratio)
+    start = nfold * partition_size
+    end = (nfold + 1) * partition_size
     test_index = indlist[start:end]
     remain_index = np.delete(indlist, np.arange(start, end))
 
     """dataset division: 0.2 for test, 0.7 for train, 0.1 for validation"""
+    train_ratio = 0.7
+    logging.info(
+        f"dataset size:{len(dataset)},training ratio:{train_ratio},\
+        validation ratio:{1-test_ratio-train_ratio},test ratio:{test_ratio},test fold No. {nfold}."
+    )
     np.random.seed(seed)
     np.random.shuffle(remain_index)
-    num_train = (int)(len(dataset) * 0.7) 
+    num_train = (int)(len(dataset) * train_ratio)
     train_index = remain_index[:num_train]
     valid_index = remain_index[num_train:]
 
     train_dataset = Physio_Dataset(
         use_index_list=train_index, missing_ratio=missing_ratio, seed=seed
     )
-    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) #minor type bug fixed
+    train_loader = DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True
+    )  # minor type bug fixed
     valid_dataset = Physio_Dataset(
         use_index_list=valid_index, missing_ratio=missing_ratio, seed=seed
     )

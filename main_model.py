@@ -2,11 +2,11 @@ import numpy as np
 import torch
 import torch.nn as nn
 from diff_models import diff_CSDI
-
+import logging
 
 class CSDI_base(nn.Module):
-    """kernel model for diffusion imputation"""
-    def __init__(self, target_dim, config, device):
+    """kernel model for time series imputation based on DiffWave"""
+    def __init__(self, target_dim, config:dict, device):
         super().__init__()
         """set members including: 
         dataset dimensions : embedded time, embedded feature, total
@@ -295,6 +295,7 @@ class CSDI_PM25(CSDI_base):
 class CSDI_Physio(CSDI_base):
     def __init__(self, config, device, target_dim=35):
         super(CSDI_Physio, self).__init__(target_dim, config, device)
+        logging.info(f"CSDI model with parameters: {self.__dict__}")
 
     def process_data(self, batch):
         """convert batch data into :\\
