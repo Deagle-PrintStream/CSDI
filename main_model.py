@@ -143,8 +143,14 @@ class CSDI_base(nn.Module):
         target_mask = observed_mask - cond_mask
         residual = (noise - predicted) * target_mask
         num_eval = target_mask.sum()
-        loss = (residual ** 2).sum() / (num_eval if num_eval > 0 else 1) #another time consumer line TODO
-        return loss
+        #loss = (residual ** 2).sum() / (num_eval if num_eval > 0 else 1) #another time consumer line TODO
+        try:    
+            coeff=1/num_eval
+            loss=torch.pow(residual , 2).sum() * coeff
+        except ValueError:
+            loss=torch.pow(residual , 2).sum()
+        finally:
+            return loss #type:ignore
 
     def set_input_to_diffmodel(self, noisy_data, observed_data, cond_mask):
         """concanate time embedding with feature ones, not actually transfering input into diffWave model"""

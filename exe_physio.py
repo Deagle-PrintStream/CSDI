@@ -12,7 +12,8 @@ import logging
 from main_model import CSDI_Physio
 from dataset_physio import get_dataloader
 from CSDI_utils import train, evaluate
-from diff_models import diff_CSDI,DiffusionEmbedding,ResidualBlock
+from diff_models import diff_CSDI, DiffusionEmbedding, ResidualBlock #only for line profiler
+
 
 def parse_argument() -> argparse.Namespace:
     """read in arguments from command line, kernel arguments:
@@ -64,7 +65,7 @@ def save_config(nfold: int, config) -> str:
     os.makedirs(foldername, exist_ok=True)
     with open(foldername + "config.json", "w") as f:
         json.dump(config, f, indent=4)
-    logging.info("config files saved at "+foldername)
+    logging.info("config files saved at " + foldername)
     return foldername
 
 
@@ -95,7 +96,7 @@ def main() -> None:
         pretrain_model_path = "./save/" + args.modelfolder + "/model.pth"
         model.load_state_dict(torch.load(pretrain_model_path))
     """test the model"""
-    #return #imputation cost too much time, we first shelve the prediction part
+    return #imputation cost too much time, we first shelve the prediction part
     evaluate(model, test_loader, nsample=args.nsample, scaler=1, foldername=foldername)
 
 
@@ -111,21 +112,30 @@ if __name__ == "__main__":
     )
 
     lp = LineProfiler()
-    lp.add_function(train)
-    lp.add_function(evaluate)
-    lp.add_function(CSDI_Physio.evaluate)
-    lp.add_function(CSDI_Physio.forward)
-    lp.add_function(CSDI_Physio.calc_loss)
-    lp.add_function(CSDI_Physio.impute)
-    lp.add_function(diff_CSDI.forward)
-    lp.add_function(DiffusionEmbedding.forward)
-    lp.add_function(ResidualBlock.forward)
+    watch_list = [
+        train,
+        evaluate,
+        CSDI_Physio.evaluate,
+        CSDI_Physio.forward,
+        CSDI_Physio.calc_loss,
+        CSDI_Physio.impute,
+        diff_CSDI.forward,
+        DiffusionEmbedding.forward,
+        ResidualBlock.forward,
+        ResidualBlock.forward_feature,
+        ResidualBlock.forward_time,
+    ]
+    for func in watch_list:
+        lp.add_function(func)
     lp_wrapper = lp(main)
 
     try:
         lp_wrapper()
     except Exception as e:
+        logging.error(e)
         print(e)
     finally:
-        with open("./save/profiler"+ current_time + ".txt",mode="w",encoding="utf-8") as f:
+        with open(
+            "./save/profiler" + current_time + ".txt", mode="w", encoding="utf-8"
+        ) as f:
             lp.print_stats(stream=f)
