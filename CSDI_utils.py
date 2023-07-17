@@ -148,7 +148,7 @@ def calc_RMSE(median,c_target,eval_points,scaler:float=1):
 
 def calc_MAE(median,c_target,eval_points,scaler:float=1):
     """Mean absolute error MAE"""
-    return ((median - c_target) * eval_points) *scaler
+    return torch.abs((median - c_target) * eval_points) *scaler
 
 
 def evaluate(model:torch.nn.Module, test_loader, nsample:int=100, scaler:float=1, mean_scaler:float=0, foldername=""):

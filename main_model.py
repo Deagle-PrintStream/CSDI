@@ -22,6 +22,15 @@ class CSDI_base(nn.Module):
         self.emb_feature_dim = config["model"]["featureemb"]
         self.is_unconditional = config["model"]["is_unconditional"]
         self.target_strategy = config["model"]["target_strategy"]
+        
+        if self.target_strategy=="random":
+            self.get_mask=self.get_randmask
+        elif self.target_strategy=="historical":
+            self.get_mask=self.get_hist_mask
+        elif self.target_strategy=="mix":
+            self.get_mask=self.get_mix_mask
+        elif self.target_strategy=="forecast":
+            self.get_mask=self.get_forecase_mask
 
         self.emb_total_dim = self.emb_time_dim + self.emb_feature_dim
         if self.is_unconditional == False:
@@ -74,21 +83,35 @@ class CSDI_base(nn.Module):
         return cond_mask
 
     def get_hist_mask(self, observed_mask, for_pattern_mask=None):
-        """mask by Historical strategy or Mix strategy"""
+        """mask by Historical strategy"""
         if for_pattern_mask is None:
             for_pattern_mask = observed_mask
-        rand_mask=[] #expand variable scope
-        if self.target_strategy == "mix":
-            rand_mask = self.get_randmask(observed_mask)
 
         cond_mask = observed_mask.clone()
-        #integrale history strategy and mix strategy together in a quite quirky way
+        for i in range(len(cond_mask)):
+            # draw another sample for histmask (i-1 corresponds to another sample)
+            cond_mask[i] = cond_mask[i] * for_pattern_mask[i - 1] 
+        return cond_mask
+    
+    def get_mix_mask(self,observed_mask, for_pattern_mask=None):
+        """mask by Mix strategy"""
+        if for_pattern_mask is None:
+            for_pattern_mask = observed_mask
+        rand_mask=self.get_randmask(observed_mask) 
+        cond_mask = observed_mask.clone()
+
         for i in range(len(cond_mask)):
             mask_choice = np.random.rand()
-            if self.target_strategy == "mix" and mask_choice > 0.5:
+            if  mask_choice > 0.5:
                 cond_mask[i] = rand_mask[i]
             else:  # draw another sample for histmask (i-1 corresponds to another sample)
                 cond_mask[i] = cond_mask[i] * for_pattern_mask[i - 1] 
+        return cond_mask
+    
+    def get_forecase_mask(self,observed_mask):
+        cond_mask = observed_mask.clone()
+        for i in range(len(observed_mask)):
+            ...
         return cond_mask
 
     def get_side_info(self, observed_tp, cond_mask):
@@ -225,17 +248,13 @@ class CSDI_base(nn.Module):
             for_pattern_mask,
             _,
         ) = self.process_data(batch)
-
+        
         #summon mask array by preset strategy
-        if is_train == 0:
-            #validation mode
+        cond_mask=...
+        if is_train == 0:#validation mode            
             cond_mask = gt_mask
-        elif self.target_strategy != "random":
-            cond_mask = self.get_hist_mask(
-                observed_mask, for_pattern_mask=for_pattern_mask
-            )
         else:
-            cond_mask = self.get_randmask(observed_mask)
+            cond_mask=self.get_mask(observed_mask)        
 
         side_info = self.get_side_info(observed_tp, cond_mask)
 

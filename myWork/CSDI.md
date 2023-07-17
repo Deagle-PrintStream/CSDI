@@ -13,21 +13,22 @@
 
 ## Summary of paper
 
-1. main task
-   1. impute missing values using machine learning techniques within time series data.
-2. innovations
+1. brief introduction
+> Most of the raw data retrieved from different data sources consist of missing values (NaN values), and the most common method of dealing with missing values is directly dropping them. This paper provides an alternative solution by using the imputation model proposed in the following paper. 
+> CSDI is a diffusion model which generates missing values in raw data by diffusion process using observed values as conditional input. The model is trained by optimizing an unsupervised task: recovery of a certain ratio of masked observed data by using the rest observed data as conditional input. When performing real imputation on datasets, all missing values are imputation targets and all observed values serve as conditional input.
+1. innovations
    1. proposed a conditional diffusion model for time series imputation
    2. and a self-supervised training method to handle the missing values
-3. formula expression
-   1. $X=\{x_{1:K,1:L}\}\in \mathbb{R}^{K\times L}$ is the origin time series, where $K$ is  the number of features , $L$ is the length of timespan. $M=\{m_{1:K,1:L}\}\in \{1,0\}^{K\times L}$ is the observation mask. Timestamp is $s=\{s_{1:L}\}$. Each time series is expressed as $\{\bold{X,M,s}\}$
-   2. forward process in model is defiend by Markov chain:$$q(\bold{x}_{1:T} | \bold{x}_0)\coloneqq \prod_{t=1}^T q(x_t|x_{t-1}), q(x_t|x_{t-1})\sim \mathcal{N}(\sqrt{1-\beta_t}x_{t-1},\beta_t \bold{I})$$, where $\beta_t$ is the small positive constant to constrain the input noise.$\hat{\alpha}\coloneqq 1-\beta_t,\alpha_t\coloneqq \prod_{i=1}^t\hat{\alpha}_i$. 
-   3. Reverse process denoises is defined by Markov chain as well:$$p_\theta(\bold{x}_{0:T})\coloneqq p(\bold{x}_T)\prod_{t=1}^T{p_\theta(\bold{x}_{t-1} | \bold{x}_{t})},\bold{x}_T\sim \mathcal{N}(\bold{0,I})$$
-   4. denoising diffusion probabilistic models (DDPM) with parameters:$$\bold{\mu}_\theta(\bold{x}_t,t)=\frac{1}{\alpha_t}\bigg({\bold{x}_t-\frac{\beta_t}{\sqrt{1-\alpha_t}}\epsilon_\theta(\bold{x}-t,t)}\bigg)\\
+2. formula expression
+   1. $X=\{x_{1:K,1:L}\}\in \mathbb{R}^{K\times L}$ is the origin time series, where $K$ is  the number of features , $L$ is the length of timespan. $M=\{m_{1:K,1:L}\}\in \{1,0\}^{K\times L}$ is the observation mask. Timestamp is $s=\{s_{1:L}\}$ . Each time series is expressed as  $\{\bold{X,M,s}\}$ 
+   2. forward process in model is defiend by Markov chain: $$q(\bold{x}_{1:T} | \bold{x}_0)\coloneqq \prod_{t=1}^T q(x_t|x_{t-1}), q(x_t|x_{t-1})\sim \mathcal{N}(\sqrt{1-\beta_t}x_{t-1},\beta_t \bold{I})$$ , where $\beta_t$ is the small positive constant to constrain the input noise.  $\hat{\alpha}\coloneqq 1-\beta_t,\alpha_t\coloneqq \prod_{i=1}^t\hat{\alpha}_i$ . 
+   3. Reverse process denoises is defined by Markov chain as well: $$p_\theta(\bold{x}_{0:T})\coloneqq p(\bold{x}_T)\prod_{t=1}^T{p_\theta(\bold{x}_{t-1} | \bold{x}_{t})},\bold{x}_T\sim \mathcal{N}(\bold{0,I})$$ 
+   4. denoising diffusion probabilistic models (DDPM) with parameters: $$\bold{\mu}_\theta(\bold{x}_t,t)=\frac{1}{\alpha_t}\bigg({\bold{x}_t-\frac{\beta_t}{\sqrt{1-\alpha_t}}\epsilon_\theta(\bold{x}-t,t)}\bigg)\\
    \sigma_\theta(\bold{x}_t,t)=\left\{\begin{array}{l}\frac{1-\alpha_{t-1}}{1-\alpha_{t}}\beta_t&&t>1\\\beta_1&&t=1
    \end{array}\right.
 $$
-   5. Our goal is to predict conditional probability of $q(\bold{x}^{ta}_0 | \bold{x}^{co}_0)$. Whereby adding an input $\epsilon_\theta$ into prediction noise netwrok to represente $x_0^{co}$, loss function turns into:$$\hat{\theta}=\arg\min\limits_{\theta}\mathcal{L}(\theta)\coloneqq\arg\min\limits_{\theta}\mathbb{E}_{x_0\sim q(x_0),\epsilon\sim\mathcal{N}(0,\bold{I}),t}{\lVert\epsilon-\epsilon_\theta(x_{t}^{ta},t | x^{co}_0)   \rVert^2_2}$$
-4. model architecture
+   1. Our goal is to predict conditional probability of $q(\bold{x}^{ta}_0 | \bold{x}^{co}_0)$ . Whereby adding an input $\epsilon_\theta$ into prediction noise netwrok to represente $x_0^{co}$ , loss function turns into: $$\hat{\theta}=\arg\min\limits_{\theta}\mathcal{L}(\theta)\coloneqq\arg\min\limits_{\theta}\mathbb{E}_{x_0\sim q(x_0),\epsilon\sim\mathcal{N}(0,\bold{I}),t}{\lVert\epsilon-\epsilon_\theta(x_{t}^{ta},t | x^{co}_0)   \rVert^2_2}$$
+1. model architecture
 ![model architecture](./model%20architecture.jpg)
    1. training: **self-supervised learning** like MLM, manually masked a part of oberved values as missing ones and train the model to impute this part. 
    2. four strategy of mask is provided:
@@ -39,7 +40,8 @@ $$
    4. 2-dimensional **attention mechanism** is used in each residual layer to capture temporal and feature dependencies.
    5. **side information** is provided for training along with $\epsilon_\theta$: time embedding $\bold{s}$ and categorical feature embedding for $K$ features.
    6. model is based on **DiffWave** and refined for time series imputation: replacing convolution kernel with transformer structure for capture of time series features.
-1. results![result1](./probabilistic%20results.jpg)![result2](./deterministic%20results.jpg)
+1. results
+   ![result1](./probabilistic%20results.jpg)![result2](./deterministic%20results.jpg)
    1. improves the continuous ranked probability score(CRPS) over existing probabilistic methods
    2. decreases the mean absolute error (MAE) compared with sota
    3. can be applied to time series interpolations or forecasting for one step further.
@@ -103,8 +105,8 @@ Commit records can be checked in [CSDI/myWork-github](https://github.com/Deagle-
 
 ## Details in essential modules
 
-Increased the training speed technically by modifying some codes without changing algorithm.
-- In `calc_loss` funciton, a sentence of none-zero value judgement consumed a large amount of time. Before & After:
+Increased the training speed technically by modifying some codes without changing algorithm. Denote attribute count as $K$, epoches as $n$, dataset size as $N$
+- In `calc_loss` funciton, a sentence of none-zero value judgement consumed a large amount of time. This reduced time linearly by $O(K\times n\times N)$ . Before & After:
 ```txt
 Line #      Hits         Time  Per Hit   % Time  Line Contents
 ==============================================================
@@ -143,7 +145,7 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
    152                                                   finally:
    153       700       2961.0      4.2      0.0              return loss #type:ignore
 ```
-- In `train` function, a sentence to display the loss per step with `tensor.item()` consumed large amount of time but not actually interact with model training. Before & After:
+- In `train` function, a sentence to display the loss per step with `tensor.item()` consumed large amount of time but not actually interact with model training. This reduced time linearly by $O(K\times n\times N)$ .Before & After:
 ```txt
 Line #      Hits         Time  Per Hit   % Time  Line Contents
 ==============================================================
@@ -181,7 +183,7 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
     68         2       6689.0   3344.5      0.0          logging.info(f"average loss:{avg_loss} at epoch:{epoch_no}")
 ......
 ```
-## result reimplementation
+## Result reimplementation
 
 See: [results reimplementation](../visualize_examples.ipynb)
 

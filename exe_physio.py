@@ -70,20 +70,31 @@ def save_config(nfold: int, config) -> str:
 
 
 def main() -> None:
+    #loggin setting
+    current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+    logging.basicConfig(
+        level=logging.DEBUG,
+        filename="./save/log" + current_time + ".log",
+        format="%(asctime)s %(message)s",
+        datefmt="%I:%M:%S ",
+    )
+
+    #read arguments, yaml config files and save it
     args = parse_argument()
     config = read_config(args.config, args.unconditional, args.testmissingratio)
     foldername = save_config(args.nfold, config)
+    #prepare data loader
     train_loader, valid_loader, test_loader = get_dataloader(
         args.seed,
         args.nfold,
         config["train"]["batch_size"],
         config["model"]["test_missing_ratio"],
     )
-    """initialize the model"""
+    #prepare model
     model = CSDI_Physio(config, args.device).to(args.device)
 
     if args.modelfolder == "":
-
+        #start training
         train(
             model,
             config["train"]["lr"],
@@ -93,23 +104,17 @@ def main() -> None:
             foldername=foldername,
         )
     else:
+        #load pretrained model
         pretrain_model_path = "./save/" + args.modelfolder + "/model.pth"
         model.load_state_dict(torch.load(pretrain_model_path))
-    """test the model"""
-    return #imputation cost too much time, we first shelve the prediction part
+    #start evaluation
     evaluate(model, test_loader, nsample=args.nsample, scaler=1, foldername=foldername)
 
+    exit(0)
 
-if __name__ == "__main__":
-    warnings.filterwarnings("ignore")
-    os.chdir(sys.path[0])
+def time_profiler()->None:
+    r"""shell function for `main()` with `line_profiler` to track time consumption in major modules"""
     current_time = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    logging.basicConfig(
-        level=logging.DEBUG,
-        filename="./save/log" + current_time + ".log",
-        format="%(asctime)s %(message)s",
-        datefmt="%I:%M:%S ",
-    )
 
     lp = LineProfiler()
     watch_list = [
@@ -138,4 +143,10 @@ if __name__ == "__main__":
         with open(
             "./save/profiler" + current_time + ".txt", mode="w", encoding="utf-8"
         ) as f:
-            lp.print_stats(stream=f)
+            lp.print_stats(stream=f)    
+
+if __name__ == "__main__":
+    warnings.filterwarnings("ignore")
+    os.chdir(sys.path[0])
+    #time_profiler()
+    main()
