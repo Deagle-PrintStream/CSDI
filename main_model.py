@@ -30,7 +30,7 @@ class CSDI_base(nn.Module):
         elif self.target_strategy=="mix":
             self.get_mask=self.get_mix_mask
         elif self.target_strategy=="forecast":
-            self.get_mask=self.get_forecase_mask
+            self.get_mask=self.get_forecast_mask
 
         self.emb_total_dim = self.emb_time_dim + self.emb_feature_dim
         if self.is_unconditional == False:
@@ -108,10 +108,30 @@ class CSDI_base(nn.Module):
                 cond_mask[i] = cond_mask[i] * for_pattern_mask[i - 1] 
         return cond_mask
     
-    def get_forecase_mask(self,observed_mask):
-        cond_mask = observed_mask.clone()
-        for i in range(len(observed_mask)):
-            ...
+    def get_fixed_mask(self,observed_mask:torch.Tensor):
+        """mask a fixed pattern as unknown part(in forecast mode)"""
+        MISSING_RATIO=0.10
+
+        cond_mask=observed_mask.clone()
+        num_time_steps = observed_mask.shape[2]
+        cond_mask[:,:,int(num_time_steps*(1-MISSING_RATIO)):]=0
+        return cond_mask
+
+    def get_forecast_mask(self,observed_mask:torch.Tensor):
+        """Mask observed values as missing ones with a weighted random strategy."""
+
+        num_time_steps = observed_mask.shape[2]
+        time_weights = torch.logspace(base=0.1,start=1,end=0,steps=num_time_steps).to(("cuda:0")) # Increasing weights from 0 to 1
+
+        cond_mask=observed_mask.clone()
+        for i in range(len(cond_mask)):
+            mask=torch.rand_like(observed_mask[i])*time_weights
+            sample_ratio = np.random.rand()  # missing ratio    
+            k=   int(sample_ratio*observed_mask[i].sum().item())
+            mask=mask.reshape(-1)
+            mask[mask.topk(k).indices]=-1
+            mask=mask>0
+            cond_mask[i]=mask.reshape(cond_mask[i].shape).float()
         return cond_mask
 
     def get_side_info(self, observed_tp, cond_mask):

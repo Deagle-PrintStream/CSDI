@@ -8,8 +8,7 @@
 > 4. add more details in essential modules
 > 5. test the code upon `healthcase` dataset,
 > 6. data visialization upon `healthcase` dataset
-> 7. point out defaults of code or paper
-> 8. make optimizations and compare the results.
+> 7. make improvements upon demo.
 
 ## Summary of paper
 
@@ -185,17 +184,41 @@ Line #      Hits         Time  Per Hit   % Time  Line Contents
 ```
 ## Result reimplementation
 
+Performance of CSDI model on healthcare dataset with 10% missing ratio: 
+
+```yaml
+missing_ratio: 0.10
+is_unconditional: 0
+target_strategy: "random"
+seed: 1
+nsample: 100
+train:
+  epochs: 200
+  batch_size: 16 
+  lr: 1.0e-3
+```
+| nfold | CRPS | MAE|
+|:-:|:-:|:-:|
+|0 |0.2340862876490543 | 0.21497521362257221 |
+|1 |0.24621202002478395| 0.22479919755130056|
+|2 |0.24028229310065546 |0.21689541339689117 |
+| 3| 0.2385617557324861| 0.21800483008528726|
+| 4| 0.24332977596082186| 0.2209671990463743|
+
+- mean and the standard error of CRPS :`0.240` and `0.004`
+- mean and the standard error of MAE :`0.219` and `0.003`
+
 See: [results reimplementation](../visualize_examples.ipynb)
 
 ## Data visualization
 
 See: [data visualization on healthcare dataset](./time_series_view.ipynb)
 
-## Defaults of demo
+## Improvements
 
-*TODO*
+Introduced a new mask generating strategy speicfied for future forecasting. The original mask strategy is to randomly pick up a ratio $ k $ of observed values $X\in \mathbb{R}^{K\times L}$ as masked for each record, where $k \sim \mathcal{U}(0,1)$, $L $ is length of timespan and $ K $ is number of attributes.
 
-## Optimizations
+In forecasting task, missing values are past is rather a minor problem so we omit  them. A simple way is to mask the latest $l_{miss}\leqslant L$ values of all attributes as missing in each record, which is a subset of `test` strategy given in the paper but not implemented. The `cond_mask` would be static and look like $ \bigg(\mathbf{1}^{K\times (L-l)}, \mathbf{0}^{K\times l} \bigg)$, $ l $ is relative to  `test_missing_ratio` hyperparameter.
 
-*TODO*
+Another way is to add some noise into this mask generation strategy. For each racord, we first generate a metrix $\bold{M}$ with all uniform distribution, then mutiplied by a weight array in timespan dimension $\bold{M}=\bold{M}\odot \bold{w}$, where $\bold{w}\in\mathbb{R}^L,w_i=b^{i/L}, 0<b<1$ . Finally we pick up a ratio $k \sim \mathcal{U}(0,1) $ of the largets numbers in $\bold{w}$ as missing ones. The `cond_mask` would look like this:
 
