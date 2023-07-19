@@ -1,0 +1,719 @@
+08:45:33  Namespace(config='base.yaml', device='cuda:0', modelfolder='', nfold=1, nsample=100, seed=1, testmissingratio=0.1, unconditional=False)
+08:45:33  {
+    "train": {
+        "epochs": 200,
+        "batch_size": 16,
+        "lr": 0.001
+    },
+    "diffusion": {
+        "layers": 4,
+        "channels": 64,
+        "nheads": 8,
+        "diffusion_embedding_dim": 128,
+        "beta_start": 0.0001,
+        "beta_end": 0.5,
+        "num_steps": 50,
+        "schedule": "quad"
+    },
+    "model": {
+        "is_unconditional": false,
+        "timeemb": 128,
+        "featureemb": 16,
+        "target_strategy": "random",
+        "test_missing_ratio": 0.1
+    }
+}
+08:45:33  config files saved at /output/physio_fold1_20230718_084533/
+08:45:33  dataset loaded with physio_missing 0.1 and seed1
+08:46:36  CSDI model with parameters: {'training': True, '_parameters': OrderedDict(), '_buffers': OrderedDict(), '_non_persistent_buffers_set': set(), '_backward_hooks': OrderedDict(), '_forward_hooks': OrderedDict(), '_forward_pre_hooks': OrderedDict(), '_state_dict_hooks': OrderedDict(), '_load_state_dict_pre_hooks': OrderedDict(), '_modules': OrderedDict([('embed_layer', Embedding(35, 16)), ('diffmodel', diff_CSDI(
+  (diffusion_embedding): DiffusionEmbedding(
+    (projection1): Linear(in_features=128, out_features=128, bias=True)
+    (projection2): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (input_projection): Conv1d(2, 64, kernel_size=(1,), stride=(1,))
+  (output_projection1): Conv1d(64, 64, kernel_size=(1,), stride=(1,))
+  (output_projection2): Conv1d(64, 1, kernel_size=(1,), stride=(1,))
+  (residual_layers): ModuleList(
+    (0): ResidualBlock(
+      (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+      (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+      (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (time_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+      (feature_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+    )
+    (1): ResidualBlock(
+      (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+      (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+      (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (time_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+      (feature_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+    )
+    (2): ResidualBlock(
+      (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+      (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+      (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (time_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+      (feature_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+    )
+    (3): ResidualBlock(
+      (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+      (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+      (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (time_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+      (feature_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+    )
+  )
+))]), 'device': 'cuda:0', 'target_dim': 35, 'emb_time_dim': 128, 'emb_feature_dim': 16, 'is_unconditional': False, 'target_strategy': 'random', 'get_mask': <bound method CSDI_base.get_randmask of CSDI_Physio(
+  (embed_layer): Embedding(35, 16)
+  (diffmodel): diff_CSDI(
+    (diffusion_embedding): DiffusionEmbedding(
+      (projection1): Linear(in_features=128, out_features=128, bias=True)
+      (projection2): Linear(in_features=128, out_features=128, bias=True)
+    )
+    (input_projection): Conv1d(2, 64, kernel_size=(1,), stride=(1,))
+    (output_projection1): Conv1d(64, 64, kernel_size=(1,), stride=(1,))
+    (output_projection2): Conv1d(64, 1, kernel_size=(1,), stride=(1,))
+    (residual_layers): ModuleList(
+      (0): ResidualBlock(
+        (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+        (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+        (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (time_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+        (feature_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+      (1): ResidualBlock(
+        (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+        (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+        (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (time_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+        (feature_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+      (2): ResidualBlock(
+        (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+        (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+        (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (time_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+        (feature_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+      (3): ResidualBlock(
+        (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+        (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+        (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (time_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+        (feature_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): _LinearWithBias(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+    )
+  )
+)>, 'emb_total_dim': 145, 'num_steps': 50, 'beta': array([1.00000000e-04, 5.86931491e-04, 1.47865920e-03, 2.77518314e-03,
+       4.47650330e-03, 6.58261967e-03, 9.09353227e-03, 1.20092411e-02,
+       1.53297461e-02, 1.90550474e-02, 2.31851449e-02, 2.77200386e-02,
+       3.26597285e-02, 3.80042147e-02, 4.37534971e-02, 4.99075757e-02,
+       5.64664505e-02, 6.34301215e-02, 7.07985888e-02, 7.85718523e-02,
+       8.67499120e-02, 9.53327679e-02, 1.04320420e-01, 1.13712868e-01,
+       1.23510113e-01, 1.33712154e-01, 1.44318991e-01, 1.55330624e-01,
+       1.66747054e-01, 1.78568279e-01, 1.90794301e-01, 2.03425119e-01,
+       2.16460734e-01, 2.29901144e-01, 2.43746351e-01, 2.57996354e-01,
+       2.72651153e-01, 2.87710749e-01, 3.03175141e-01, 3.19044329e-01,
+       3.35318313e-01, 3.51997093e-01, 3.69080670e-01, 3.86569042e-01,
+       4.04462212e-01, 4.22760177e-01, 4.41462938e-01, 4.60570496e-01,
+       4.80082850e-01, 5.00000000e-01]), 'alpha_hat': array([0.9999    , 0.99941307, 0.99852134, 0.99722482, 0.9955235 ,
+       0.99341738, 0.99090647, 0.98799076, 0.98467025, 0.98094495,
+       0.97681486, 0.97227996, 0.96734027, 0.96199579, 0.9562465 ,
+       0.95009242, 0.94353355, 0.93656988, 0.92920141, 0.92142815,
+       0.91325009, 0.90466723, 0.89567958, 0.88628713, 0.87648989,
+       0.86628785, 0.85568101, 0.84466938, 0.83325295, 0.82143172,
+       0.8092057 , 0.79657488, 0.78353927, 0.77009886, 0.75625365,
+       0.74200365, 0.72734885, 0.71228925, 0.69682486, 0.68095567,
+       0.66468169, 0.64800291, 0.63091933, 0.61343096, 0.59553779,
+       0.57723982, 0.55853706, 0.5394295 , 0.51991715, 0.5       ]), 'alpha': array([9.99900000e-01, 9.99313127e-01, 9.97835484e-01, 9.95066307e-01,
+       9.90611890e-01, 9.84091069e-01, 9.75142205e-01, 9.63431487e-01,
+       9.48662327e-01, 9.30585521e-01, 9.09009761e-01, 8.83811975e-01,
+       8.54946916e-01, 8.22455330e-01, 7.86470033e-01, 7.47219220e-01,
+       7.05026403e-01, 6.60306493e-01, 6.13557725e-01, 5.65349358e-01,
+       5.16305351e-01, 4.67084533e-01, 4.18358078e-01, 3.70785381e-01,
+       3.24989637e-01, 2.81534572e-01, 2.40903787e-01, 2.03484051e-01,
+       1.69553685e-01, 1.39276776e-01, 1.12703560e-01, 8.97768252e-02,
+       7.03436678e-02, 5.41715780e-02, 4.09674536e-02, 3.03979999e-02,
+       2.21099502e-02, 1.57486798e-02, 1.09740716e-02, 7.47285631e-03,
+       4.96707074e-03, 3.21867628e-03, 2.03072508e-03, 1.24570963e-03,
+       7.41867159e-04, 4.28235268e-04, 2.39185268e-04, 1.29023591e-04,
+       6.70815775e-05, 3.35407888e-05]), 'alpha_torch': tensor([[[9.9990e-01]],
+
+        [[9.9931e-01]],
+
+        [[9.9784e-01]],
+
+        [[9.9507e-01]],
+
+        [[9.9061e-01]],
+
+        [[9.8409e-01]],
+
+        [[9.7514e-01]],
+
+        [[9.6343e-01]],
+
+        [[9.4866e-01]],
+
+        [[9.3059e-01]],
+
+        [[9.0901e-01]],
+
+        [[8.8381e-01]],
+
+        [[8.5495e-01]],
+
+        [[8.2246e-01]],
+
+        [[7.8647e-01]],
+
+        [[7.4722e-01]],
+
+        [[7.0503e-01]],
+
+        [[6.6031e-01]],
+
+        [[6.1356e-01]],
+
+        [[5.6535e-01]],
+
+        [[5.1631e-01]],
+
+        [[4.6708e-01]],
+
+        [[4.1836e-01]],
+
+        [[3.7079e-01]],
+
+        [[3.2499e-01]],
+
+        [[2.8153e-01]],
+
+        [[2.4090e-01]],
+
+        [[2.0348e-01]],
+
+        [[1.6955e-01]],
+
+        [[1.3928e-01]],
+
+        [[1.1270e-01]],
+
+        [[8.9777e-02]],
+
+        [[7.0344e-02]],
+
+        [[5.4172e-02]],
+
+        [[4.0967e-02]],
+
+        [[3.0398e-02]],
+
+        [[2.2110e-02]],
+
+        [[1.5749e-02]],
+
+        [[1.0974e-02]],
+
+        [[7.4729e-03]],
+
+        [[4.9671e-03]],
+
+        [[3.2187e-03]],
+
+        [[2.0307e-03]],
+
+        [[1.2457e-03]],
+
+        [[7.4187e-04]],
+
+        [[4.2824e-04]],
+
+        [[2.3919e-04]],
+
+        [[1.2902e-04]],
+
+        [[6.7082e-05]],
+
+        [[3.3541e-05]]], device='cuda:0')}
+08:46:36  training start with epochs:200,learning_rate:0.001
+08:46:46  average loss:0.6371170390735973 at epoch:0
+08:46:49  average loss:0.42512928355823865 at epoch:1
+08:46:51  average loss:0.39229258623990143 at epoch:2
+08:46:54  average loss:0.35133621909401636 at epoch:3
+08:46:57  average loss:0.38234975121238013 at epoch:4
+08:47:00  best loss:0.37511301040649414,epoch:4
+08:47:03  average loss:0.38620432940396393 at epoch:5
+08:47:06  average loss:0.3441687930714 at epoch:6
+08:47:09  average loss:0.3406138636849143 at epoch:7
+08:47:12  average loss:0.3206488002430309 at epoch:8
+08:47:15  average loss:0.4061968109824441 at epoch:9
+08:47:18  best loss:0.3522508218884468,epoch:9
+08:47:21  average loss:0.35005660490556195 at epoch:10
+08:47:24  average loss:0.29361844062805176 at epoch:11
+08:47:27  average loss:0.35287805037064984 at epoch:12
+08:47:30  average loss:0.3255074457688765 at epoch:13
+08:47:33  average loss:0.3068539662794633 at epoch:14
+08:47:36  best loss:0.318844810128212,epoch:14
+08:47:39  average loss:0.3088753656907515 at epoch:15
+08:47:42  average loss:0.32537677071311255 at epoch:16
+08:47:45  average loss:0.31862050836736505 at epoch:17
+08:47:48  average loss:0.3097415403886275 at epoch:18
+08:47:51  average loss:0.347157976844094 at epoch:19
+08:47:54  best loss:0.29380324482917786,epoch:19
+08:47:57  average loss:0.3237060416828502 at epoch:20
+08:48:00  average loss:0.30414785038341174 at epoch:21
+08:48:03  average loss:0.2850971221923828 at epoch:22
+08:48:06  average loss:0.31861281394958496 at epoch:23
+08:48:09  average loss:0.2881308902393688 at epoch:24
+08:48:12  best loss:0.28641530126333237,epoch:24
+08:48:15  average loss:0.32153664935718884 at epoch:25
+08:48:18  average loss:0.32243882526050915 at epoch:26
+08:48:21  average loss:0.33806922219016333 at epoch:27
+08:48:24  average loss:0.29508313265713776 at epoch:28
+08:48:27  average loss:0.295633771202781 at epoch:29
+08:48:31  best loss:0.28146494179964066,epoch:29
+08:48:34  average loss:0.3021839531985196 at epoch:30
+08:48:37  average loss:0.28593965010209516 at epoch:31
+08:48:40  average loss:0.29128987138921564 at epoch:32
+08:48:43  average loss:0.2911232601512562 at epoch:33
+08:48:47  average loss:0.2939424298026345 at epoch:34
+08:48:50  best loss:0.2589315213263035,epoch:34
+08:48:53  average loss:0.27366484295238147 at epoch:35
+08:48:57  average loss:0.3047282262281938 at epoch:36
+08:49:00  average loss:0.3000226454301314 at epoch:37
+08:49:03  average loss:0.29235642606561835 at epoch:38
+08:49:06  average loss:0.28809655796397815 at epoch:39
+08:49:09  best loss:0.2469024993479252,epoch:39
+08:49:13  average loss:0.26901661265980115 at epoch:40
+08:49:16  average loss:0.2747620019045743 at epoch:41
+08:49:19  average loss:0.2574301632967862 at epoch:42
+08:49:22  average loss:0.3234282406893643 at epoch:43
+08:49:25  average loss:0.23195659030567517 at epoch:44
+08:49:31  average loss:0.2719716158780185 at epoch:45
+08:49:35  average loss:0.29064262997020374 at epoch:46
+08:49:38  average loss:0.2658258351412686 at epoch:47
+08:49:41  average loss:0.3132016225294633 at epoch:48
+08:49:44  average loss:0.29609021273526276 at epoch:49
+08:49:47  best loss:0.24645063653588295,epoch:49
+08:49:50  average loss:0.23949250307950107 at epoch:50
+08:49:53  average loss:0.24497079849243164 at epoch:51
+08:49:56  average loss:0.2975762974132191 at epoch:52
+08:49:59  average loss:0.27096995440396393 at epoch:53
+08:50:02  average loss:0.2778306007385254 at epoch:54
+08:50:05  best loss:0.23630815371870995,epoch:54
+08:50:08  average loss:0.2583760781721635 at epoch:55
+08:50:12  average loss:0.26944132284684613 at epoch:56
+08:50:15  average loss:0.2702305100180886 at epoch:57
+08:50:18  average loss:0.25845020467584784 at epoch:58
+08:50:20  average loss:0.24619861082597214 at epoch:59
+08:50:24  best loss:0.23489783331751823,epoch:59
+08:50:27  average loss:0.26927696574818005 at epoch:60
+08:50:30  average loss:0.27786408771168103 at epoch:61
+08:50:33  average loss:0.2543488849293102 at epoch:62
+08:50:36  average loss:0.23530106111006302 at epoch:63
+08:50:39  average loss:0.27120793949473987 at epoch:64
+08:50:42  best loss:0.2347434125840664,epoch:64
+08:50:45  average loss:0.24230473691766913 at epoch:65
+08:50:48  average loss:0.2689170403914018 at epoch:66
+08:50:51  average loss:0.26527244394475763 at epoch:67
+08:50:54  average loss:0.2611436193639582 at epoch:68
+08:50:57  average loss:0.24618907408280807 at epoch:69
+08:51:01  best loss:0.23382870852947235,epoch:69
+08:51:04  average loss:0.2809331633827903 at epoch:70
+08:51:07  average loss:0.24069740555503152 at epoch:71
+08:51:10  average loss:0.26607433232394134 at epoch:72
+08:51:13  average loss:0.26399189775640314 at epoch:73
+08:51:16  average loss:0.28714875741438434 at epoch:74
+08:51:19  best loss:0.22797589004039764,epoch:74
+08:51:22  average loss:0.2582915479486639 at epoch:75
+08:51:25  average loss:0.2334374947981401 at epoch:76
+08:51:28  average loss:0.24933021718805487 at epoch:77
+08:51:31  average loss:0.2690665071660822 at epoch:78
+08:51:34  average loss:0.26865506172180176 at epoch:79
+08:51:41  average loss:0.2532138390974565 at epoch:80
+08:51:44  average loss:0.26226011189547455 at epoch:81
+08:51:47  average loss:0.24872710488059305 at epoch:82
+08:51:50  average loss:0.26939964294433594 at epoch:83
+08:51:53  average loss:0.27876563505692914 at epoch:84
+08:52:00  average loss:0.254382848739624 at epoch:85
+08:52:03  average loss:0.2780004631389271 at epoch:86
+08:52:06  average loss:0.2676273692737926 at epoch:87
+08:52:09  average loss:0.24868566339666193 at epoch:88
+08:52:12  average loss:0.26235188137401233 at epoch:89
+08:52:15  best loss:0.22300640493631363,epoch:89
+08:52:18  average loss:0.26867654106833716 at epoch:90
+08:52:21  average loss:0.25248065861788666 at epoch:91
+08:52:24  average loss:0.22578577561811966 at epoch:92
+08:52:27  average loss:0.305762074210427 at epoch:93
+08:52:30  average loss:0.2527148723602295 at epoch:94
+08:52:37  average loss:0.24222458492625842 at epoch:95
+08:52:40  average loss:0.2747502760453658 at epoch:96
+08:52:43  average loss:0.2577262141487815 at epoch:97
+08:52:46  average loss:0.23808843439275568 at epoch:98
+08:52:49  average loss:0.3044736818833785 at epoch:99
+08:52:52  best loss:0.22056807577610016,epoch:99
+08:52:55  average loss:0.24184042757207697 at epoch:100
+08:52:58  average loss:0.222032677043568 at epoch:101
+08:53:01  average loss:0.27130530097267846 at epoch:102
+08:53:04  average loss:0.23416146365079013 at epoch:103
+08:53:07  average loss:0.2708126414905895 at epoch:104
+08:53:11  best loss:0.21577144414186478,epoch:104
+08:53:14  average loss:0.2932313355532559 at epoch:105
+08:53:17  average loss:0.23589411648837003 at epoch:106
+08:53:20  average loss:0.22934707728299228 at epoch:107
+08:53:23  average loss:0.23192834854125977 at epoch:108
+08:53:26  average loss:0.2571470954201438 at epoch:109
+08:53:32  average loss:0.22578323971141467 at epoch:110
+08:53:35  average loss:0.26902920549566095 at epoch:111
+08:53:38  average loss:0.2612970092079856 at epoch:112
+08:53:41  average loss:0.23830015009099786 at epoch:113
+08:53:44  average loss:0.26485141840848053 at epoch:114
+08:53:50  average loss:0.266185001893477 at epoch:115
+08:53:53  average loss:0.2528385032307018 at epoch:116
+08:53:56  average loss:0.26537684960798785 at epoch:117
+08:53:59  average loss:0.25683405182578345 at epoch:118
+08:54:02  average loss:0.23793599822304465 at epoch:119
+08:54:09  average loss:0.22402611645785245 at epoch:120
+08:54:12  average loss:0.2270778092471036 at epoch:121
+08:54:15  average loss:0.26148215207186615 at epoch:122
+08:54:18  average loss:0.25194131244312634 at epoch:123
+08:54:21  average loss:0.2639237100427801 at epoch:124
+08:54:24  best loss:0.2132938802242279,epoch:124
+08:54:28  average loss:0.25588659806685016 at epoch:125
+08:54:31  average loss:0.24388480186462402 at epoch:126
+08:54:34  average loss:0.2481198094107888 at epoch:127
+08:54:37  average loss:0.27321382002397016 at epoch:128
+08:54:40  average loss:0.2668024843389338 at epoch:129
+08:54:46  average loss:0.2740294066342441 at epoch:130
+08:54:49  average loss:0.2514713244004683 at epoch:131
+08:54:52  average loss:0.27033775502985175 at epoch:132
+08:54:55  average loss:0.23468175801363858 at epoch:133
+08:54:58  average loss:0.24026240002025256 at epoch:134
+08:55:05  average loss:0.2645699977874756 at epoch:135
+08:55:08  average loss:0.24173545837402344 at epoch:136
+08:55:11  average loss:0.2598533630371094 at epoch:137
+08:55:14  average loss:0.25068900801918725 at epoch:138
+08:55:17  average loss:0.2597372748635032 at epoch:139
+08:55:23  average loss:0.2587126168337735 at epoch:140
+08:55:26  average loss:0.25638027624650434 at epoch:141
+08:55:30  average loss:0.24232558770613236 at epoch:142
+08:55:33  average loss:0.2640590017492121 at epoch:143
+08:55:36  average loss:0.23976954546841708 at epoch:144
+08:55:42  average loss:0.25888154723427514 at epoch:145
+08:55:45  average loss:0.259260892868042 at epoch:146
+08:55:48  average loss:0.2656932527368719 at epoch:147
+08:55:51  average loss:0.26684997298500757 at epoch:148
+08:55:54  average loss:0.24731488661332565 at epoch:149
+08:56:00  average loss:0.2219630154696378 at epoch:150
+08:56:03  average loss:0.24470682577653366 at epoch:151
+08:56:06  average loss:0.3002715327522971 at epoch:152
+08:56:09  average loss:0.2462992017919367 at epoch:153
+08:56:12  average loss:0.2542728077281605 at epoch:154
+08:56:15  best loss:0.2007576823234558,epoch:154
+08:56:18  average loss:0.23279838128523392 at epoch:155
+08:56:21  average loss:0.29086691682988947 at epoch:156
+08:56:24  average loss:0.2146114002574574 at epoch:157
+08:56:27  average loss:0.2540219913829457 at epoch:158
+08:56:30  average loss:0.2605142593383789 at epoch:159
+08:56:37  average loss:0.23501099239696155 at epoch:160
+08:56:40  average loss:0.2804290164600719 at epoch:161
+08:56:43  average loss:0.24027670513499866 at epoch:162
+08:56:46  average loss:0.26905131340026855 at epoch:163
+08:56:49  average loss:0.20928887887434525 at epoch:164
+08:56:56  average loss:0.2358763651414351 at epoch:165
+08:56:59  average loss:0.2390242489901456 at epoch:166
+08:57:02  average loss:0.2289679917422208 at epoch:167
+08:57:05  average loss:0.22737899693575772 at epoch:168
+08:57:08  average loss:0.2424579533663663 at epoch:169
+08:57:15  average loss:0.21828970042142 at epoch:170
+08:57:18  average loss:0.26398827812888404 at epoch:171
+08:57:21  average loss:0.23657777092673563 at epoch:172
+08:57:24  average loss:0.2815883593125777 at epoch:173
+08:57:27  average loss:0.22696003046902744 at epoch:174
+08:57:33  average loss:0.22826084223660556 at epoch:175
+08:57:36  average loss:0.2562187801707875 at epoch:176
+08:57:40  average loss:0.2672537240115079 at epoch:177
+08:57:43  average loss:0.26732663674788043 at epoch:178
+08:57:46  average loss:0.24150980602611194 at epoch:179
+08:57:52  average loss:0.23644813624295322 at epoch:180
+08:57:55  average loss:0.27568075873635034 at epoch:181
+08:57:58  average loss:0.2316360040144487 at epoch:182
+08:58:01  average loss:0.231950044631958 at epoch:183
+08:58:04  average loss:0.23923821882768112 at epoch:184
+08:58:11  average loss:0.2540584477511319 at epoch:185
+08:58:14  average loss:0.2675164179368453 at epoch:186
+08:58:17  average loss:0.23634823885830966 at epoch:187
+08:58:20  average loss:0.24307422204451126 at epoch:188
+08:58:23  average loss:0.24148615923794833 at epoch:189
+08:58:29  average loss:0.2525169415907426 at epoch:190
+08:58:32  average loss:0.231068264354359 at epoch:191
+08:58:35  average loss:0.27003832296891644 at epoch:192
+08:58:38  average loss:0.23615707050670276 at epoch:193
+08:58:41  average loss:0.26098012924194336 at epoch:194
+08:58:47  average loss:0.2485004555095326 at epoch:195
+08:58:50  average loss:0.22639866308732468 at epoch:196
+08:58:53  average loss:0.21722821755842728 at epoch:197
+08:58:56  average loss:0.22233239087191495 at epoch:198
+08:58:59  average loss:0.2360460324720903 at epoch:199
+08:59:02  best loss:0.19673742726445198,epoch:199
+08:59:07  training completed with best_valid_loss:0.7869497090578079
+08:59:07  evaluation start with nsample:100
+09:00:40  Batch_no:1:MSE:788.7213134765625,MAE:140.84268188476562
+09:02:13  Batch_no:2:MSE:78.26897430419922,MAE:121.96635437011719
+09:03:45  Batch_no:3:MSE:185.63511657714844,MAE:132.20635986328125
+09:05:24  Batch_no:4:MSE:69.3115005493164,MAE:118.6136474609375
+09:06:57  Batch_no:5:MSE:245.65487670898438,MAE:112.58809661865234
+09:08:29  Batch_no:6:MSE:93.89616394042969,MAE:132.49868774414062
+09:09:23  Batch_no:7:MSE:19.820852279663086,MAE:31.251182556152344
+09:14:43  RMSE:0.6775218697962117
+09:14:46  MAE:0.22479919755130056
+09:14:46  CRPS:0.24621202002478395

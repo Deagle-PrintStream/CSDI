@@ -121,7 +121,8 @@ class CSDI_base(nn.Module):
         """Mask observed values as missing ones with a weighted random strategy."""
 
         num_time_steps = observed_mask.shape[2]
-        time_weights = torch.logspace(base=0.1,start=1,end=0,steps=num_time_steps).to(("cuda:0")) # Increasing weights from 0 to 1
+        EXP_BASE=0.01
+        time_weights = torch.logspace(base=EXP_BASE,start=1,end=0,steps=num_time_steps).to(("cuda:0")) # Increasing weights from 0 to 1
 
         cond_mask=observed_mask.clone()
         for i in range(len(cond_mask)):

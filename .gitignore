@@ -5,6 +5,7 @@
 !*.md
 !*.yaml
 !*/
+!logs/*.txt
 !*.png
 !*.jpg
 

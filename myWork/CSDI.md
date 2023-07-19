@@ -220,5 +220,5 @@ Introduced a new mask generating strategy speicfied for future forecasting. The 
 
 In forecasting task, missing values are past is rather a minor problem so we omit  them. A simple way is to mask the latest $l_{miss}\leqslant L$ values of all attributes as missing in each record, which is a subset of `test` strategy given in the paper but not implemented. The `cond_mask` would be static and look like $ \bigg(\mathbf{1}^{K\times (L-l)}, \mathbf{0}^{K\times l} \bigg)$, $ l $ is relative to  `test_missing_ratio` hyperparameter.
 
-Another way is to add some noise into this mask generation strategy. For each racord, we first generate a metrix $\bold{M}$ with all uniform distribution, then mutiplied by a weight array in timespan dimension $\bold{M}=\bold{M}\odot \bold{w}$, where $\bold{w}\in\mathbb{R}^L,w_i=b^{i/L}, 0<b<1$ . Finally we pick up a ratio $k \sim \mathcal{U}(0,1) $ of the largets numbers in $\bold{w}$ as missing ones. The `cond_mask` would look like this:
-
+Another way is to add some noise into this mask generation strategy. For each racord, we first generate a metrix $\bold{M}$ with all uniform distribution, then mutiplied by a weight array in timespan dimension $\bold{M}=\bold{M}\odot \bold{W}$, where $W_{ij}=b^{j/L}, 0<b<1$ . Finally we pick up a ratio $k \sim \mathcal{U}(0,1) $ of the largets numbers in $\bold{w}$ as missing ones, this corresponds with the given `random` strategy. The `cond_mask` would look like this:
+![forecast mask](./mask_example.png)
