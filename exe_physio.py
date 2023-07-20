@@ -9,7 +9,7 @@ import warnings
 from line_profiler import LineProfiler
 import logging
 
-from main_model import CSDI_Physio
+from main_model import CSDI_stock
 from dataset_physio import get_dataloader
 from CSDI_utils import train, evaluate
 from diff_models import diff_CSDI, DiffusionEmbedding, ResidualBlock #only for line profiler
@@ -91,7 +91,7 @@ def main() -> None:
         config["model"]["test_missing_ratio"],
     )
     #prepare model
-    model = CSDI_Physio(config, args.device).to(args.device)
+    model = CSDI_stock(config, args.device).to(args.device)
 
     if args.modelfolder == "":
         #start training
@@ -120,10 +120,10 @@ def time_profiler()->None:
     watch_list = [
         train,
         evaluate,
-        CSDI_Physio.evaluate,
-        CSDI_Physio.forward,
-        CSDI_Physio.calc_loss,
-        CSDI_Physio.impute,
+        CSDI_stock.evaluate,
+        CSDI_stock.forward,
+        CSDI_stock.calc_loss,
+        CSDI_stock.impute,
         diff_CSDI.forward,
         DiffusionEmbedding.forward,
         ResidualBlock.forward,

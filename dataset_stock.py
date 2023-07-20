@@ -13,17 +13,16 @@ attributes = ["open", "high", "low", "close"]
 class Stock_Dataset(Dataset):
     def __init__(
         self,
-        stock_name: str="SH",
         use_index_list=None,
         missing_ratio: float = 0.0,
         seed: int = 0,
-        window_size: int = 100,
-        slide_step: int = 100,
+        window_size: int = 360,
+        slide_step: int = 90,
     ) -> None:
         # super().__init__()
 
-        csv_path = f"./data/stock/{stock_name}.csv"
-        pk_path = "./data/stock_{}_missing{}_seed{}.pk".format(stock_name,missing_ratio,seed)
+        csv_path = f"./data/stock/"
+        pk_path = "./data/stock_missing{}_seed{}.pk".format(missing_ratio,seed)
         self.observed_values = np.array([])
         self.observed_masks = np.array([])
         self.gt_masks = np.array([])
@@ -48,34 +47,29 @@ class Stock_Dataset(Dataset):
             return
 
         logging.info(
-            f"dataset loaded with stock {stock_name} and missing_ratio {str(missing_ratio)} and seed {str(seed)} "
+            f"dataset loaded with stocks and missing_ratio {str(missing_ratio)} and seed {str(seed)} "
         )
-        if os.path.isfile(csv_path) == False:
-            raise FileNotFoundError("stock price dataset not found")
 
         observed_values = []
         observed_masks = []
         gt_masks = []
-        # read raw stock price data
-        df = pd.read_csv(csv_path, index_col="date")
-        df.reset_index(drop=True, inplace=True)
-        df = df.fillna(method="ffill")
-        df=df[attributes]
-        size = len(df)
-        # Z-score normalization for entire dataset
-        df=self.normalize(df)
+
         # static mask
         ob_mask = np.ones((window_size, len(attributes)))
         gt_mask_ind = np.arange(int(window_size * (1-missing_ratio)), window_size)
         gt_mask = np.ones((window_size, len(attributes)))
-        gt_mask[gt_mask_ind, :] = 0
-        # segment into slides with given length of `window_size`
-        for start in range(0, size - window_size, slide_step):
-            _data = df.loc[start:start + window_size-1].copy()
-            #_data=self.normalize(_data)
-            observed_values.append(_data)
-            observed_masks.append(ob_mask)
-            gt_masks.append(gt_mask)
+        gt_mask[gt_mask_ind, :] = 0        
+        
+        for file_name in os.listdir(csv_path):
+            # read raw stock price data
+            df=pd.read_csv(csv_path+file_name, index_col="date")
+            df=self.normalize(df)
+            # segment into slides with given length of `window_size`
+            for start in range(0, len(df) - window_size, slide_step):
+                _data = df.loc[start:start + window_size-1].copy()
+                observed_values.append(_data)
+                observed_masks.append(ob_mask)
+                gt_masks.append(gt_mask)
         self.observed_values = np.array(observed_values)
         logging.info(f"dataset shape:{self.observed_values.shape}")
         self.observed_masks = np.array(observed_masks)
@@ -101,28 +95,32 @@ class Stock_Dataset(Dataset):
     
     @staticmethod
     def normalize(df:pd.DataFrame)->pd.DataFrame:
+        df.reset_index(drop=True, inplace=True)
+        df=df[attributes]
+        df = df.fillna(method="ffill")
         for col in df.columns:
             mean = df[col].mean()
             std = df[col].std()
             df[col] = (df[col] - mean) / std
         return df
 
-def get_dataloader(stock_name:str="SH",
+def get_dataloader(
     seed=1, nfold: int = 0, batch_size=16, missing_ratio=0.1
 ):  # minor type bug fixed
 
     # only to obtain total length of dataset
-    dataset = Stock_Dataset(stock_name=stock_name, missing_ratio=missing_ratio, seed=seed)
+    dataset = Stock_Dataset( missing_ratio=missing_ratio, seed=seed)
     indlist = np.arange(len(dataset))
-    np.random.seed(seed)
-    np.random.shuffle(indlist)
+
+    # we dont shuffle the indlist here because we set certain stock as never been seen in training process
     """dataset division: 0.2 for test, 0.75 for train, 0.05 for validation"""
     train_ratio = 0.75
     test_ratio = 0.2
-    valid_ratio = 1 - test_ratio - train_ratio
+    valid_ratio = round(1 - test_ratio - train_ratio,3)
 
     test_index = indlist[int(len(indlist) * (1 - test_ratio)) :]
     remain_index = np.delete(indlist, test_index)
+    #shuffle the slides of stock price
     np.random.seed(seed)
     np.random.shuffle(remain_index)
     train_index = remain_index[0 : int(len(indlist) * train_ratio)]
@@ -135,7 +133,7 @@ def get_dataloader(stock_name:str="SH",
     print("dataset loading start")
 
     train_dataset = Stock_Dataset(
-        stock_name=stock_name,
+        
         use_index_list=train_index,
         missing_ratio=missing_ratio,
         seed=seed,
@@ -144,14 +142,14 @@ def get_dataloader(stock_name:str="SH",
         train_dataset, batch_size=batch_size, shuffle=True
     )  # minor type bug fixed
     valid_dataset = Stock_Dataset(
-        stock_name=stock_name,
+        
         use_index_list=valid_index,
         missing_ratio=missing_ratio,
         seed=seed,
     )  
     valid_loader = DataLoader(valid_dataset, batch_size=batch_size, shuffle=False)
     test_dataset = Stock_Dataset(
-        stock_name=stock_name,
+        
         use_index_list=test_index,
         missing_ratio=missing_ratio,
         seed=seed,

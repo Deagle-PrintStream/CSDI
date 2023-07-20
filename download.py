@@ -39,11 +39,15 @@ elif sys.argv[1] == "pm25":
         with open(path, "wb") as f:
             pickle.dump([mean, std], f)
     create_normalizer_pm25()
+
 elif sys.argv[1] == "stock":
     import qstock as qs
     os.chdir(sys.path[0])
-    df_sh=qs.get_data(code_list=["SH"],freq="d")
-    df_sh=df_sh[["open","high","low","close","volume"]]
-
     os.makedirs("./data/stock/", exist_ok=True)
-    df_sh.to_csv("./data/stock/SH.csv")
+    stock_list=["SH","SZ","CYB","hs300","sz50","zz500",'DJIA','SPX','NDX','HSI']
+    for stock in stock_list:
+        path=f"./data/stock/{stock}.csv"
+        if os.path.isfile(path)==False:
+            df=qs.get_data(code_list=[stock],freq="d")
+            df=df[["open","high","low","close","volume"]]
+            df.to_csv(path)

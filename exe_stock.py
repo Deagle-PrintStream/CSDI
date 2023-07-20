@@ -19,7 +19,7 @@ def parse_argument() -> argparse.Namespace:
     pretrained model to load(or not), count of samples.
     """
     parser = argparse.ArgumentParser(description="CSDI")
-    parser.add_argument("--config", type=str, default="base.yaml")
+    parser.add_argument("--config", type=str, default="test.yaml")
     parser.add_argument("--device", default="cuda", help="Device for Attack")
     parser.add_argument("--seed", type=int, default=1)
     parser.add_argument("--testmissingratio", type=float, default=0.1)
@@ -29,7 +29,6 @@ def parse_argument() -> argparse.Namespace:
     parser.add_argument("--unconditional", action="store_true")
     parser.add_argument("--modelfolder", type=str, default="")
     parser.add_argument("--nsample", type=int, default=100)
-    parser.add_argument("--stock", type=str, default="SH")
 
     args = parser.parse_args()
     print(args)
@@ -84,7 +83,6 @@ def main() -> None:
     foldername = save_config(args.nfold, config)
     # prepare data loader
     train_loader, valid_loader, test_loader = get_dataloader(
-        args.stock,
         args.seed,
         args.nfold,
         config["train"]["batch_size"],

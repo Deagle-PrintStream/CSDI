@@ -29,6 +29,8 @@ class CSDI_base(nn.Module):
             self.get_mask=self.get_hist_mask
         elif self.target_strategy=="mix":
             self.get_mask=self.get_mix_mask
+        elif self.target_strategy=="fixed":
+            self.get_mask=self.get_fixed_mask
         elif self.target_strategy=="forecast":
             self.get_mask=self.get_forecast_mask
 
@@ -339,9 +341,9 @@ class CSDI_PM25(CSDI_base):
         )
 
 
-class CSDI_Physio(CSDI_base):
+class CSDI_Stock(CSDI_base):
     def __init__(self, config, device, target_dim=35):
-        super(CSDI_Physio, self).__init__(target_dim, config, device)
+        super(CSDI_Stock, self).__init__(target_dim, config, device)
         logging.info(f"CSDI model with parameters: {self.__dict__}")
 
     def process_data(self, batch):
