@@ -212,7 +212,7 @@ See: [results reimplementation](../visualize_examples.ipynb)
 
 ## Data visualization
 
-See: [data visualization on healthcare dataset](./time_series_view.ipynb)
+See: [data visualization on healthcare dataset](./data_visualization.ipynb)
 
 ## Improvements
 
