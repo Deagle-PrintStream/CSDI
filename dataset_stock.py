@@ -63,13 +63,16 @@ class Stock_Dataset(Dataset):
         for file_name in os.listdir(csv_path):
             # read raw stock price data
             df=pd.read_csv(csv_path+file_name, index_col="date")
-            df=self.normalize(df)
+            df=self.normalize_stock(df)
             # segment into slides with given length of `window_size`
             for start in range(0, len(df) - window_size, slide_step):
-                _data = df.loc[start:start + window_size-1].copy()
-                observed_values.append(_data)
+                segment = df.loc[start:start + window_size-1].copy()  
+                #added a normalize step in processing each slide              
+                segment=self.normalize_seg(segment)
+                observed_values.append(segment)
                 observed_masks.append(ob_mask)
                 gt_masks.append(gt_mask)
+                
         self.observed_values = np.array(observed_values)
         logging.info(f"dataset shape:{self.observed_values.shape}")
         self.observed_masks = np.array(observed_masks)
@@ -94,7 +97,7 @@ class Stock_Dataset(Dataset):
         return len(self.use_index_list)
     
     @staticmethod
-    def normalize(df:pd.DataFrame)->pd.DataFrame:
+    def normalize_stock(df:pd.DataFrame)->pd.DataFrame:
         df.reset_index(drop=True, inplace=True)
         df=df[attributes]
         df = df.fillna(method="ffill")
@@ -102,6 +105,13 @@ class Stock_Dataset(Dataset):
             mean = df[col].mean()
             std = df[col].std()
             df[col] = (df[col] - mean) / std
+        return df
+    
+    @staticmethod
+    def normalize_seg(df:pd.DataFrame)->pd.DataFrame:
+        # normalize each slide of history price by minus the first day's price, omitting historical volatility
+        first_day=df.iloc[0] 
+        df=df-first_day 
         return df
 
 def get_dataloader(

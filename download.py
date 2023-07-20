@@ -44,6 +44,7 @@ elif sys.argv[1] == "stock":
     import qstock as qs
     os.chdir(sys.path[0])
     os.makedirs("./data/stock/", exist_ok=True)
+    #stock_list=["SH","SZ","CYB","hs300","sz50","zz500",'DJIA','SPX','NDX','HSI']
     stock_list=["SH","SZ","CYB","hs300","sz50","zz500",'DJIA','SPX','NDX','HSI']
     for stock in stock_list:
         path=f"./data/stock/{stock}.csv"
