@@ -1,0 +1,504 @@
+11:07:20  Namespace(config='fixed_strategy.yaml', device='cuda', seed=3, testmissingratio=0.1, nfold=0, unconditional=False, modelfolder='', nsample=100)
+11:07:20  {
+    "train": {
+        "epochs": 200,
+        "batch_size": 8,
+        "lr": 0.001
+    },
+    "diffusion": {
+        "layers": 4,
+        "channels": 64,
+        "nheads": 8,
+        "diffusion_embedding_dim": 128,
+        "beta_start": 0.0001,
+        "beta_end": 0.5,
+        "num_steps": 50,
+        "schedule": "quad"
+    },
+    "model": {
+        "is_unconditional": false,
+        "timeemb": 128,
+        "featureemb": 16,
+        "target_strategy": "fixed",
+        "test_missing_ratio": 0.1
+    }
+}
+11:07:20  config files saved at /output/stock_fold0_20230720_110720/
+11:07:20  dataset loaded with stocks and missing_ratio 0.1 and seed 3 
+11:07:21  dataset shape:(652, 360, 4)
+11:07:21  dataset size:652,training ratio:0.75,        validation ratio:0.05,test ratio:0.2,test fold No. 0.
+11:07:21  dataset loading completed
+11:07:24  CSDI model with parameters: {'training': True, '_parameters': OrderedDict(), '_buffers': OrderedDict(), '_non_persistent_buffers_set': set(), '_backward_pre_hooks': OrderedDict(), '_backward_hooks': OrderedDict(), '_is_full_backward_hook': None, '_forward_hooks': OrderedDict(), '_forward_hooks_with_kwargs': OrderedDict(), '_forward_pre_hooks': OrderedDict(), '_forward_pre_hooks_with_kwargs': OrderedDict(), '_state_dict_hooks': OrderedDict(), '_state_dict_pre_hooks': OrderedDict(), '_load_state_dict_pre_hooks': OrderedDict(), '_load_state_dict_post_hooks': OrderedDict(), '_modules': OrderedDict([('embed_layer', Embedding(4, 16)), ('diffmodel', diff_CSDI(
+  (diffusion_embedding): DiffusionEmbedding(
+    (projection1): Linear(in_features=128, out_features=128, bias=True)
+    (projection2): Linear(in_features=128, out_features=128, bias=True)
+  )
+  (input_projection): Conv1d(2, 64, kernel_size=(1,), stride=(1,))
+  (output_projection1): Conv1d(64, 64, kernel_size=(1,), stride=(1,))
+  (output_projection2): Conv1d(64, 1, kernel_size=(1,), stride=(1,))
+  (residual_layers): ModuleList(
+    (0-3): 4 x ResidualBlock(
+      (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+      (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+      (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+      (time_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+      (feature_layer): TransformerEncoder(
+        (layers): ModuleList(
+          (0): TransformerEncoderLayer(
+            (self_attn): MultiheadAttention(
+              (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+            )
+            (linear1): Linear(in_features=64, out_features=64, bias=True)
+            (dropout): Dropout(p=0.1, inplace=False)
+            (linear2): Linear(in_features=64, out_features=64, bias=True)
+            (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+            (dropout1): Dropout(p=0.1, inplace=False)
+            (dropout2): Dropout(p=0.1, inplace=False)
+          )
+        )
+      )
+    )
+  )
+))]), 'device': 'cuda', 'target_dim': 4, 'emb_time_dim': 128, 'emb_feature_dim': 16, 'is_unconditional': False, 'target_strategy': 'fixed', 'get_mask': <bound method CSDI_base.get_fixed_mask of CSDI_Stock(
+  (embed_layer): Embedding(4, 16)
+  (diffmodel): diff_CSDI(
+    (diffusion_embedding): DiffusionEmbedding(
+      (projection1): Linear(in_features=128, out_features=128, bias=True)
+      (projection2): Linear(in_features=128, out_features=128, bias=True)
+    )
+    (input_projection): Conv1d(2, 64, kernel_size=(1,), stride=(1,))
+    (output_projection1): Conv1d(64, 64, kernel_size=(1,), stride=(1,))
+    (output_projection2): Conv1d(64, 1, kernel_size=(1,), stride=(1,))
+    (residual_layers): ModuleList(
+      (0-3): 4 x ResidualBlock(
+        (diffusion_projection): Linear(in_features=128, out_features=64, bias=True)
+        (cond_projection): Conv1d(145, 128, kernel_size=(1,), stride=(1,))
+        (mid_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (output_projection): Conv1d(64, 128, kernel_size=(1,), stride=(1,))
+        (time_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+        (feature_layer): TransformerEncoder(
+          (layers): ModuleList(
+            (0): TransformerEncoderLayer(
+              (self_attn): MultiheadAttention(
+                (out_proj): NonDynamicallyQuantizableLinear(in_features=64, out_features=64, bias=True)
+              )
+              (linear1): Linear(in_features=64, out_features=64, bias=True)
+              (dropout): Dropout(p=0.1, inplace=False)
+              (linear2): Linear(in_features=64, out_features=64, bias=True)
+              (norm1): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (norm2): LayerNorm((64,), eps=1e-05, elementwise_affine=True)
+              (dropout1): Dropout(p=0.1, inplace=False)
+              (dropout2): Dropout(p=0.1, inplace=False)
+            )
+          )
+        )
+      )
+    )
+  )
+)>, 'emb_total_dim': 145, 'num_steps': 50, 'beta': array([1.00000000e-04, 5.86931491e-04, 1.47865920e-03, 2.77518314e-03,
+       4.47650330e-03, 6.58261967e-03, 9.09353227e-03, 1.20092411e-02,
+       1.53297461e-02, 1.90550474e-02, 2.31851449e-02, 2.77200386e-02,
+       3.26597285e-02, 3.80042147e-02, 4.37534971e-02, 4.99075757e-02,
+       5.64664505e-02, 6.34301215e-02, 7.07985888e-02, 7.85718523e-02,
+       8.67499120e-02, 9.53327679e-02, 1.04320420e-01, 1.13712868e-01,
+       1.23510113e-01, 1.33712154e-01, 1.44318991e-01, 1.55330624e-01,
+       1.66747054e-01, 1.78568279e-01, 1.90794301e-01, 2.03425119e-01,
+       2.16460734e-01, 2.29901144e-01, 2.43746351e-01, 2.57996354e-01,
+       2.72651153e-01, 2.87710749e-01, 3.03175141e-01, 3.19044329e-01,
+       3.35318313e-01, 3.51997093e-01, 3.69080670e-01, 3.86569042e-01,
+       4.04462212e-01, 4.22760177e-01, 4.41462938e-01, 4.60570496e-01,
+       4.80082850e-01, 5.00000000e-01]), 'alpha_hat': array([0.9999    , 0.99941307, 0.99852134, 0.99722482, 0.9955235 ,
+       0.99341738, 0.99090647, 0.98799076, 0.98467025, 0.98094495,
+       0.97681486, 0.97227996, 0.96734027, 0.96199579, 0.9562465 ,
+       0.95009242, 0.94353355, 0.93656988, 0.92920141, 0.92142815,
+       0.91325009, 0.90466723, 0.89567958, 0.88628713, 0.87648989,
+       0.86628785, 0.85568101, 0.84466938, 0.83325295, 0.82143172,
+       0.8092057 , 0.79657488, 0.78353927, 0.77009886, 0.75625365,
+       0.74200365, 0.72734885, 0.71228925, 0.69682486, 0.68095567,
+       0.66468169, 0.64800291, 0.63091933, 0.61343096, 0.59553779,
+       0.57723982, 0.55853706, 0.5394295 , 0.51991715, 0.5       ]), 'alpha': array([9.99900000e-01, 9.99313127e-01, 9.97835484e-01, 9.95066307e-01,
+       9.90611890e-01, 9.84091069e-01, 9.75142205e-01, 9.63431487e-01,
+       9.48662327e-01, 9.30585521e-01, 9.09009761e-01, 8.83811975e-01,
+       8.54946916e-01, 8.22455330e-01, 7.86470033e-01, 7.47219220e-01,
+       7.05026403e-01, 6.60306493e-01, 6.13557725e-01, 5.65349358e-01,
+       5.16305351e-01, 4.67084533e-01, 4.18358078e-01, 3.70785381e-01,
+       3.24989637e-01, 2.81534572e-01, 2.40903787e-01, 2.03484051e-01,
+       1.69553685e-01, 1.39276776e-01, 1.12703560e-01, 8.97768252e-02,
+       7.03436678e-02, 5.41715780e-02, 4.09674536e-02, 3.03979999e-02,
+       2.21099502e-02, 1.57486798e-02, 1.09740716e-02, 7.47285631e-03,
+       4.96707074e-03, 3.21867628e-03, 2.03072508e-03, 1.24570963e-03,
+       7.41867159e-04, 4.28235268e-04, 2.39185268e-04, 1.29023591e-04,
+       6.70815775e-05, 3.35407888e-05]), 'alpha_torch': tensor([[[9.9990e-01]],
+
+        [[9.9931e-01]],
+
+        [[9.9784e-01]],
+
+        [[9.9507e-01]],
+
+        [[9.9061e-01]],
+
+        [[9.8409e-01]],
+
+        [[9.7514e-01]],
+
+        [[9.6343e-01]],
+
+        [[9.4866e-01]],
+
+        [[9.3059e-01]],
+
+        [[9.0901e-01]],
+
+        [[8.8381e-01]],
+
+        [[8.5495e-01]],
+
+        [[8.2246e-01]],
+
+        [[7.8647e-01]],
+
+        [[7.4722e-01]],
+
+        [[7.0503e-01]],
+
+        [[6.6031e-01]],
+
+        [[6.1356e-01]],
+
+        [[5.6535e-01]],
+
+        [[5.1631e-01]],
+
+        [[4.6708e-01]],
+
+        [[4.1836e-01]],
+
+        [[3.7079e-01]],
+
+        [[3.2499e-01]],
+
+        [[2.8153e-01]],
+
+        [[2.4090e-01]],
+
+        [[2.0348e-01]],
+
+        [[1.6955e-01]],
+
+        [[1.3928e-01]],
+
+        [[1.1270e-01]],
+
+        [[8.9777e-02]],
+
+        [[7.0344e-02]],
+
+        [[5.4172e-02]],
+
+        [[4.0967e-02]],
+
+        [[3.0398e-02]],
+
+        [[2.2110e-02]],
+
+        [[1.5749e-02]],
+
+        [[1.0974e-02]],
+
+        [[7.4729e-03]],
+
+        [[4.9671e-03]],
+
+        [[3.2187e-03]],
+
+        [[2.0307e-03]],
+
+        [[1.2457e-03]],
+
+        [[7.4187e-04]],
+
+        [[4.2824e-04]],
+
+        [[2.3919e-04]],
+
+        [[1.2902e-04]],
+
+        [[6.7082e-05]],
+
+        [[3.3541e-05]]], device='cuda:0')}
+11:07:24  training start with epochs:200,learning_rate:0.001
+11:07:30  average loss:0.34151467969340665 at epoch:0
+11:07:33  average loss:0.14835852961386403 at epoch:1
+11:07:37  average loss:0.1382454749076597 at epoch:2
+11:07:41  average loss:0.1088092480936358 at epoch:3
+11:07:44  average loss:0.0858048931244881 at epoch:4
+11:07:57  best loss:0.07382465508722123,epoch:4
+11:08:01  average loss:0.06256425765252882 at epoch:5
+11:08:04  average loss:0.07320717842348161 at epoch:6
+11:08:08  average loss:0.06303614570248511 at epoch:7
+11:08:11  average loss:0.0691586232954456 at epoch:8
+11:08:15  average loss:0.05674291426135648 at epoch:9
+11:08:28  best loss:0.05814754590392113,epoch:9
+11:08:31  average loss:0.06220376107000535 at epoch:10
+11:08:35  average loss:0.06033300968908494 at epoch:11
+11:08:38  average loss:0.055347946382338004 at epoch:12
+11:08:42  average loss:0.052492437824126215 at epoch:13
+11:08:45  average loss:0.057922151780897574 at epoch:14
+11:08:59  best loss:0.05733713614089148,epoch:14
+11:09:02  average loss:0.04765778587710473 at epoch:15
+11:09:06  average loss:0.038206346573368195 at epoch:16
+11:09:09  average loss:0.04082814724214615 at epoch:17
+11:09:13  average loss:0.043790659596843105 at epoch:18
+11:09:16  average loss:0.0506398985462804 at epoch:19
+11:09:30  best loss:0.050037303673369546,epoch:19
+11:09:33  average loss:0.04163588631537653 at epoch:20
+11:09:37  average loss:0.04621080044777163 at epoch:21
+11:09:40  average loss:0.0387856537295926 at epoch:22
+11:09:44  average loss:0.04111736051497921 at epoch:23
+11:09:48  average loss:0.04072165873742873 at epoch:24
+11:10:02  best loss:0.04215444846167451,epoch:24
+11:10:05  average loss:0.04654417883965277 at epoch:25
+11:10:09  average loss:0.0380928554842549 at epoch:26
+11:10:13  average loss:0.040095621539700414 at epoch:27
+11:10:16  average loss:0.043564781065910094 at epoch:28
+11:10:20  average loss:0.036288526750379996 at epoch:29
+11:10:37  average loss:0.039001976290056785 at epoch:30
+11:10:41  average loss:0.0413661080022012 at epoch:31
+11:10:45  average loss:0.04740510832878851 at epoch:32
+11:10:48  average loss:0.0331047119632844 at epoch:33
+11:10:52  average loss:0.037646582049708215 at epoch:34
+11:11:09  average loss:0.03595809398158904 at epoch:35
+11:11:13  average loss:0.029687727651288433 at epoch:36
+11:11:16  average loss:0.036118872704044465 at epoch:37
+11:11:20  average loss:0.047996609441695676 at epoch:38
+11:11:23  average loss:0.0563175908980831 at epoch:39
+11:11:41  average loss:0.0362811973018031 at epoch:40
+11:11:44  average loss:0.028986640514865998 at epoch:41
+11:11:48  average loss:0.03699055794746645 at epoch:42
+11:11:51  average loss:0.05210127369050057 at epoch:43
+11:11:55  average loss:0.04266250902606595 at epoch:44
+11:12:12  average loss:0.0395516695514802 at epoch:45
+11:12:16  average loss:0.034287333488464355 at epoch:46
+11:12:19  average loss:0.03195807818443545 at epoch:47
+11:12:23  average loss:0.031642371608364965 at epoch:48
+11:12:26  average loss:0.03161618209654285 at epoch:49
+11:12:40  best loss:0.035487234725483825,epoch:49
+11:12:43  average loss:0.03425100541883899 at epoch:50
+11:12:47  average loss:0.040084089002301614 at epoch:51
+11:12:51  average loss:0.03839626619892736 at epoch:52
+11:12:54  average loss:0.03995173208175167 at epoch:53
+11:12:58  average loss:0.04024902082258655 at epoch:54
+11:13:15  average loss:0.02988459987025107 at epoch:55
+11:13:19  average loss:0.03740515247468026 at epoch:56
+11:13:22  average loss:0.03680961747323313 at epoch:57
+11:13:26  average loss:0.027593531916218418 at epoch:58
+11:13:30  average loss:0.032016088885645715 at epoch:59
+11:13:47  average loss:0.0334693847164031 at epoch:60
+11:13:50  average loss:0.028313738684500416 at epoch:61
+11:13:54  average loss:0.029822509134969404 at epoch:62
+11:13:57  average loss:0.03385329246520996 at epoch:63
+11:14:01  average loss:0.03502318936009561 at epoch:64
+11:14:15  best loss:0.034657196407871585,epoch:64
+11:14:18  average loss:0.030420864782025738 at epoch:65
+11:14:22  average loss:0.027870107081628615 at epoch:66
+11:14:25  average loss:0.03443551448083693 at epoch:67
+11:14:29  average loss:0.0362755790833504 at epoch:68
+11:14:33  average loss:0.02865243919434086 at epoch:69
+11:14:50  average loss:0.03457124002518192 at epoch:70
+11:14:53  average loss:0.029135463699217764 at epoch:71
+11:14:57  average loss:0.027592755133105863 at epoch:72
+11:15:01  average loss:0.0334305340243924 at epoch:73
+11:15:04  average loss:0.02941005652950656 at epoch:74
+11:15:18  best loss:0.03456728912091681,epoch:74
+11:15:22  average loss:0.02607225602672946 at epoch:75
+11:15:25  average loss:0.022493050944420598 at epoch:76
+11:15:29  average loss:0.0287660091154037 at epoch:77
+11:15:33  average loss:0.030821661795339277 at epoch:78
+11:15:36  average loss:0.03004616883493239 at epoch:79
+11:15:50  best loss:0.03029343428178912,epoch:79
+11:15:53  average loss:0.030504990008569533 at epoch:80
+11:15:57  average loss:0.03396031548899989 at epoch:81
+11:16:01  average loss:0.030616431466994748 at epoch:82
+11:16:04  average loss:0.034616024263443484 at epoch:83
+11:16:08  average loss:0.03367180209006033 at epoch:84
+11:16:25  average loss:0.037041806405590426 at epoch:85
+11:16:29  average loss:0.027255646644100066 at epoch:86
+11:16:33  average loss:0.03859899890038275 at epoch:87
+11:16:36  average loss:0.053775502789405086 at epoch:88
+11:16:39  average loss:0.045659922784374606 at epoch:89
+11:16:57  average loss:0.03557134828259868 at epoch:90
+11:17:00  average loss:0.03324832070258356 at epoch:91
+11:17:04  average loss:0.030873406317926223 at epoch:92
+11:17:08  average loss:0.038603798035652406 at epoch:93
+11:17:11  average loss:0.02977865357552805 at epoch:94
+11:17:28  average loss:0.03630506223247897 at epoch:95
+11:17:32  average loss:0.02525073097598168 at epoch:96
+11:17:36  average loss:0.0451998479904667 at epoch:97
+11:17:39  average loss:0.029506050771282565 at epoch:98
+11:17:43  average loss:0.020649667709104477 at epoch:99
+11:17:57  best loss:0.028638675232373532,epoch:99
+11:18:00  average loss:0.019709623629047025 at epoch:100
+11:18:03  average loss:0.026819580985653783 at epoch:101
+11:18:07  average loss:0.020410158941822666 at epoch:102
+11:18:10  average loss:0.018421580714564168 at epoch:103
+11:18:13  average loss:0.023488463894013437 at epoch:104
+11:18:31  average loss:0.03346503165460402 at epoch:105
+11:18:35  average loss:0.028288158678239392 at epoch:106
+11:18:38  average loss:0.018803536891937256 at epoch:107
+11:18:42  average loss:0.01915592916550175 at epoch:108
+11:18:46  average loss:0.028247890933867422 at epoch:109
+11:19:03  average loss:0.017263187516120174 at epoch:110
+11:19:07  average loss:0.027305920277872393 at epoch:111
+11:19:10  average loss:0.023185168543169574 at epoch:112
+11:19:14  average loss:0.022640462844602523 at epoch:113
+11:19:18  average loss:0.024361047052568006 at epoch:114
+11:19:35  average loss:0.02710265690280545 at epoch:115
+11:19:39  average loss:0.02242885289653655 at epoch:116
+11:19:43  average loss:0.024987209227777297 at epoch:117
+11:19:46  average loss:0.027133149485434254 at epoch:118
+11:19:50  average loss:0.02152756337196596 at epoch:119
+11:20:04  best loss:0.025968652129882856,epoch:119
+11:20:07  average loss:0.028894228319967945 at epoch:120
+11:20:11  average loss:0.03193433246304912 at epoch:121
+11:20:14  average loss:0.026643176232614824 at epoch:122
+11:20:18  average loss:0.029070413881732572 at epoch:123
+11:20:21  average loss:0.023995960912396832 at epoch:124
+11:20:35  best loss:0.02564283074545009,epoch:124
+11:20:39  average loss:0.023069627823368195 at epoch:125
+11:20:42  average loss:0.024286000959334836 at epoch:126
+11:20:46  average loss:0.022121604411832748 at epoch:127
+11:20:49  average loss:0.0253728820431617 at epoch:128
+11:20:53  average loss:0.020218926091347973 at epoch:129
+11:21:07  best loss:0.02412693038405407,epoch:129
+11:21:10  average loss:0.02131876253312634 at epoch:130
+11:21:14  average loss:0.025017580678386074 at epoch:131
+11:21:17  average loss:0.025765326715284777 at epoch:132
+11:21:21  average loss:0.02147362885936614 at epoch:133
+11:21:24  average loss:0.024583041667938232 at epoch:134
+11:21:42  average loss:0.029942400993839387 at epoch:135
+11:21:45  average loss:0.028763703761562225 at epoch:136
+11:21:49  average loss:0.033700393092247746 at epoch:137
+11:21:52  average loss:0.030940934534995787 at epoch:138
+11:21:56  average loss:0.02145079643495621 at epoch:139
+11:22:13  average loss:0.02648900785753804 at epoch:140
+11:22:16  average loss:0.025497613414641348 at epoch:141
+11:22:20  average loss:0.03112155968143094 at epoch:142
+11:22:23  average loss:0.03089699629814394 at epoch:143
+11:22:27  average loss:0.025771888994401502 at epoch:144
+11:22:44  average loss:0.023688429786312963 at epoch:145
+11:22:48  average loss:0.02267675245961835 at epoch:146
+11:22:51  average loss:0.021503346581612865 at epoch:147
+11:22:55  average loss:0.024453820720795664 at epoch:148
+11:22:59  average loss:0.01912946854868243 at epoch:149
+11:23:16  average loss:0.02249389310036936 at epoch:150
+11:23:20  average loss:0.02041579254211918 at epoch:151
+11:23:23  average loss:0.021087627257070234 at epoch:152
+11:23:27  average loss:0.01177595123167961 at epoch:153
+11:23:30  average loss:0.021140731150104154 at epoch:154
+11:23:44  best loss:0.02001997452074041,epoch:154
+11:23:47  average loss:0.016657350524779287 at epoch:155
+11:23:51  average loss:0.011640340089797974 at epoch:156
+11:23:54  average loss:0.01623699165159656 at epoch:157
+11:23:58  average loss:0.017673834677665465 at epoch:158
+11:24:01  average loss:0.012519729714239798 at epoch:159
+11:24:15  best loss:0.019574010733603722,epoch:159
+11:24:18  average loss:0.02136767679645169 at epoch:160
+11:24:22  average loss:0.01838022470474243 at epoch:161
+11:24:25  average loss:0.012881473187477357 at epoch:162
+11:24:28  average loss:0.01657502305123114 at epoch:163
+11:24:32  average loss:0.013348906270919307 at epoch:164
+11:24:46  best loss:0.018689498626848773,epoch:164
+11:24:49  average loss:0.013470814112694032 at epoch:165
+11:24:53  average loss:0.03636017922432192 at epoch:166
+11:24:56  average loss:0.017009075610868393 at epoch:167
+11:25:00  average loss:0.015331710538556498 at epoch:168
+11:25:03  average loss:0.013358555493816253 at epoch:169
+11:25:21  average loss:0.011602313287796514 at epoch:170
+11:25:24  average loss:0.01370071115032319 at epoch:171
+11:25:28  average loss:0.011072286675053259 at epoch:172
+11:25:31  average loss:0.012479982068461756 at epoch:173
+11:25:35  average loss:0.01056128163491526 at epoch:174
+11:25:49  best loss:0.018646489080440785,epoch:174
+11:25:52  average loss:0.01497336741416685 at epoch:175
+11:25:56  average loss:0.015586269478644095 at epoch:176
+11:25:59  average loss:0.014215871211021178 at epoch:177
+11:26:03  average loss:0.015524088375030025 at epoch:178
+11:26:06  average loss:0.016196248992796865 at epoch:179
+11:26:23  average loss:0.01489150043456785 at epoch:180
+11:26:27  average loss:0.010027584529692126 at epoch:181
+11:26:31  average loss:0.014481065734740227 at epoch:182
+11:26:34  average loss:0.012089840827449676 at epoch:183
+11:26:38  average loss:0.014989665439051966 at epoch:184
+11:26:55  average loss:0.012179142044436547 at epoch:185
+11:26:58  average loss:0.013365734969415972 at epoch:186
+11:27:02  average loss:0.01124689559782705 at epoch:187
+11:27:05  average loss:0.013279781226188905 at epoch:188
+11:27:09  average loss:0.014475909932967155 at epoch:189
+11:27:23  best loss:0.018442337337460014,epoch:189
+11:27:26  average loss:0.016053785239496538 at epoch:190
+11:27:30  average loss:0.008058096131970805 at epoch:191
+11:27:33  average loss:0.011555938951430781 at epoch:192
+11:27:37  average loss:0.01875480144254623 at epoch:193
+11:27:40  average loss:0.01564272084543782 at epoch:194
+11:27:54  best loss:0.01816910614503459,epoch:194
+11:27:58  average loss:0.014332980878891484 at epoch:195
+11:28:01  average loss:0.01581637320979949 at epoch:196
+11:28:05  average loss:0.01576676195667636 at epoch:197
+11:28:08  average loss:0.01456606388092041 at epoch:198
+11:28:12  average loss:0.01949819634037633 at epoch:199
+11:28:26  best loss:0.018034909801956798,epoch:199
+11:28:26  training completed with best_valid_loss:0.37873310584109277
+11:28:26  evaluation start with nsample:100
+11:29:30  Batch_no:1:MSE:0.42867332696914673,MAE:16.017547607421875
+11:30:34  Batch_no:2:MSE:0.270955353975296,MAE:13.71855354309082
+11:31:39  Batch_no:3:MSE:1.8880622386932373,MAE:38.46710968017578
+11:32:43  Batch_no:4:MSE:8.023307800292969,MAE:73.35313415527344
+11:33:47  Batch_no:5:MSE:8.290889739990234,MAE:78.90900421142578
+11:34:51  Batch_no:6:MSE:3.3828630447387695,MAE:53.96553039550781
+11:35:55  Batch_no:7:MSE:25.981956481933594,MAE:123.98394775390625
+11:37:00  Batch_no:8:MSE:9.853713989257812,MAE:72.68943786621094
+11:38:04  Batch_no:9:MSE:5.800693511962891,MAE:65.25856018066406
+11:39:08  Batch_no:10:MSE:8.090042114257812,MAE:83.2007827758789
+11:40:13  Batch_no:11:MSE:181.52755737304688,MAE:371.2536315917969
+11:41:17  Batch_no:12:MSE:32.94739532470703,MAE:124.70769500732422
+11:42:21  Batch_no:13:MSE:0.0007877264870330691,MAE:0.786622941493988
+11:43:25  Batch_no:14:MSE:0.0009133084677159786,MAE:0.7977379560470581
+11:44:30  Batch_no:15:MSE:0.0010361269814893603,MAE:0.9168505668640137
+11:45:34  Batch_no:16:MSE:0.0007666324963793159,MAE:0.7702930569648743
+11:46:20  Batch_no:17:MSE:0.00036978107527829707,MAE:0.35112661123275757
+11:46:21  RMSE:0.12323606642550236
+11:46:21  MAE:0.059327161042264605
+11:46:21  CRPS:0.04465415603236148

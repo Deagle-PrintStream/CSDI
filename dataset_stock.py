@@ -68,13 +68,15 @@ class Stock_Dataset(Dataset):
             for start in range(0, len(df) - window_size, slide_step):
                 segment = df.loc[start:start + window_size-1].copy()  
                 #added a normalize step in processing each slide              
-                segment=self.normalize_seg(segment)
+                #segment=self.normalize_seg(segment)
                 observed_values.append(segment)
                 observed_masks.append(ob_mask)
                 gt_masks.append(gt_mask)
-                
-        self.observed_values = np.array(observed_values)
+
+        _array=np.array(observed_values)
+        self.observed_values =(_array-_array.mean(axis=0))/_array.std(axis=0)#normalize here
         logging.info(f"dataset shape:{self.observed_values.shape}")
+
         self.observed_masks = np.array(observed_masks)
         self.gt_masks = np.array(gt_masks)
 
@@ -97,7 +99,7 @@ class Stock_Dataset(Dataset):
         return len(self.use_index_list)
     
     @staticmethod
-    def normalize_stock(df:pd.DataFrame)->pd.DataFrame:
+    def normalize_stock_old(df:pd.DataFrame)->pd.DataFrame:
         df.reset_index(drop=True, inplace=True)
         df=df[attributes]
         df = df.fillna(method="ffill")
@@ -105,6 +107,13 @@ class Stock_Dataset(Dataset):
             mean = df[col].mean()
             std = df[col].std()
             df[col] = (df[col] - mean) / std
+        return df
+    
+    @staticmethod
+    def normalize_stock(df:pd.DataFrame)->pd.DataFrame:
+        df.reset_index(drop=True, inplace=True)
+        df=df[attributes]
+        df = df.fillna(method="ffill")
         return df
     
     @staticmethod

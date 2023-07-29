@@ -1,0 +1,23 @@
+
+#type: args
+
+train:
+  epochs: 300 #diminished
+  batch_size: 8 #diminished
+  lr: 2.0e-3
+
+diffusion:
+  layers: 4 
+  channels: 64 
+  nheads: 8
+  diffusion_embedding_dim: 128 #diminished
+  beta_start: 0.0001
+  beta_end: 0.5
+  num_steps: 50 #diminished
+  schedule: "quad"
+
+model:
+  is_unconditional: 0
+  timeemb: 128
+  featureemb: 16
+  target_strategy: "forecast"
