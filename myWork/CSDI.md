@@ -208,11 +208,11 @@ train:
 - mean and the standard error of CRPS :`0.240` and `0.004`
 - mean and the standard error of MAE :`0.219` and `0.003`
 
-See: [results reimplementation](../visualize_examples.ipynb)
+See: [results reimplementation](https://github.com/Deagle-PrintStream/CSDI/blob/myFork/visualize_examples.ipynb)
 
 ## Data visualization
 
-See: [data visualization on healthcare dataset](./data_visualization.ipynb)
+See: [data visualization on healthcare dataset](https://github.com/Deagle-PrintStream/CSDI/blob/myFork/myWork/data_visualization.ipynb)
 
 ## Improvements
 
@@ -220,5 +220,8 @@ Introduced a new mask generating strategy speicfied for future forecasting. The 
 
 In forecasting task, missing values is rather a minor problem so we omit it. A simple way is to mask the latest $l_{miss}\leqslant L$ values of all attributes as missing in each record, which is a subset of `test` strategy given in the paper but not implemented. The `cond_mask` would be static and look like $ \bigg(\mathbf{1}^{K\times (L-l)}, \mathbf{0}^{K\times l} \bigg)$, where $ l $ is relative to  `test_missing_ratio` hyperparameter.
 
-Another way is to add some noise into this mask generation strategy. For each racord, we first generate a metrix $\bold{M}$ with all uniform distribution, then mutiplied by a weight array in timespan dimension $\bold{M}=\bold{M}\odot \bold{W}$, where $W_{ij}=b^{j/L}, 0<b<1$ . Finally we pick up a ratio $k \sim \mathcal{U}(0,1) $ of the largets numbers in $\bold{w}$ as missing ones, this operation corresponds with the given `random` strategy. The `cond_mask` would look like this (x-axis for timespan and y-axis for attributes for example):
+Another way is to add some noise into mask generation strategy. This step aims to accelerate the convergence of noise at the junction part between past and future.  For each record, we first generate a metrix $\bold{M}$ with all uniform distribution, then mutiplied by a weight array in timespan dimension $\bold{M}=\bold{M}\odot \bold{W}$, where $W_{ij}=b^{j/L}, 0<b<1$ . Finally we pick up a ratio $k \sim \mathcal{U}(0,1) $ of the largets numbers in $\bold{w}$ as missing ones, this operation corresponds with the given `random` strategy. Denote $ m_t$ as the probability of being masked, the probability function is defined as : $ P(m_t=1)=\beta\exp(-\alpha t/L), 0\leqslant t\leqslant L,\beta=\frac{L}{\alpha}(1-e^{-\alpha})$ .The `cond_mask` would look like this (x-axis for timespan and y-axis for attributes):
 ![forecast mask](./mask_example.png)
+
+Moreover, the probability function can be shifted from exponential distribution to a linear function: $$P(m_t=1)=\left\{\begin{array}{l}0&&0\leqslant t\leqslant L_1\\\frac{t-L_1}{L_2-L_1} &&L_1< t\leqslant L_2\\ 1&& L_2<t\leqslant L
+\end{array}\right.$$ $L_1,L_2$ is the border of fading area. Or any monotonic function like sigmoid can be applied.
